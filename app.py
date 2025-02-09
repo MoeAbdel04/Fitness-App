@@ -198,6 +198,11 @@ def calorie_plan():
 
     return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
+@app.route('/calorie_maintenance', methods=['GET', 'POST'])
+@login_required
+def calorie_maintenance():
+    return redirect(url_for('calorie_plan'))
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
