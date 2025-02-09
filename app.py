@@ -3,8 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, FloatField, SelectField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, NumberRange
+from wtforms import StringField, PasswordField, SubmitField, FloatField, SelectField, IntegerField, RadioField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -51,44 +51,59 @@ class BMIForm(FlaskForm):
     weight = FloatField('Weight (lbs)', validators=[DataRequired(message="Please enter the weight in pounds."), NumberRange(min=10, max=1000, message="Weight must be between 10 and 1000 lbs.")])
     submit = SubmitField('Calculate')
 
-class CalorieForm(FlaskForm):
-    calories = FloatField('Calories Consumed', validators=[DataRequired(), NumberRange(min=0)])
-    submit = SubmitField('Add Entry')
+class CaloriePlanForm(FlaskForm):
+    age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=10, max=100)])
+    gender = RadioField('Gender', choices=[('male', 'Male'), ('female', 'Female')], validators=[DataRequired()])
+    height_ft = FloatField('Height (ft)', validators=[DataRequired()])
+    height_in = FloatField('Height (in)', validators=[DataRequired()])
+    weight = FloatField('Weight (lbs)', validators=[DataRequired(), NumberRange(min=50, max=1000)])
+    activity_level = SelectField('Activity Level', choices=[
+        ('sedentary', 'Sedentary (little or no exercise)'),
+        ('light', 'Lightly active (light exercise/sports 1-3 days/week)'),
+        ('moderate', 'Moderately active (moderate exercise/sports 3-5 days/week)'),
+        ('very', 'Very active (hard exercise/sports 6-7 days a week)')
+    ], validators=[DataRequired()])
+    submit = SubmitField('Calculate Maintenance and Plan')
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[
-        DataRequired(),
-        Length(min=6, message="Password must be at least 6 characters."),
-        EqualTo('confirm_password', message='Passwords must match.')
-    ])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
-    submit = SubmitField('Register')
+@app.route('/calorie_plan', methods=['GET', 'POST'])
+@login_required
+def calorie_plan():
+    form = CaloriePlanForm()
+    maintenance_calories = None
+    deficit_plan = {}
 
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    if form.validate_on_submit():
+        # Calculate BMR
+        total_height_in = (form.height_ft.data * 12) + form.height_in.data
+        if form.gender.data == 'male':
+            bmr = 66 + (6.23 * form.weight.data) + (12.7 * total_height_in) - (6.8 * form.age.data)
+        else:
+            bmr = 655 + (4.35 * form.weight.data) + (4.7 * total_height_in) - (4.7 * form.age.data)
+
+        # Calculate TDEE (Total Daily Energy Expenditure)
+        activity_multipliers = {
+            'sedentary': 1.2,
+            'light': 1.375,
+            'moderate': 1.55,
+            'very': 1.725
+        }
+        maintenance_calories = bmr * activity_multipliers[form.activity_level.data]
+
+        # Calculate deficit plans
+        deficit_plan['light'] = maintenance_calories * 0.9
+        deficit_plan['medium'] = maintenance_calories * 0.8
+        deficit_plan['extreme'] = maintenance_calories * 0.7
+
+        flash('Calorie maintenance and deficit plans calculated successfully!', 'success')
+        return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
+
+    return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
 @app.route('/')
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
-
-@app.route('/calorie_tracker', methods=['GET', 'POST'])
-@login_required
-def calorie_tracker():
-    form = CalorieForm()
-    if form.validate_on_submit():
-        new_entry = CalorieTracking(user_id=current_user.id, calories=form.calories.data)
-        db.session.add(new_entry)
-        db.session.commit()
-        flash('Calorie entry added successfully!', 'success')
-        return redirect(url_for('calorie_tracker'))
-    calorie_history = CalorieTracking.query.filter_by(user_id=current_user.id).order_by(CalorieTracking.date.desc()).all()
-    return render_template('calorie_tracker.html', form=form, calorie_history=calorie_history)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
