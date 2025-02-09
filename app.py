@@ -156,6 +156,26 @@ def delete_bmi(entry_id):
     flash('BMI entry deleted successfully.', 'success')
     return redirect(url_for('bmi_calculator'))
 
+@app.route('/workout_selection')
+@login_required
+def workout_selection():
+    return render_template('workout_selection.html')
+
+@app.route('/cardio_training')
+@login_required
+def cardio_training():
+    return "Cardio Training Plan Coming Soon"
+
+@app.route('/weight_training')
+@login_required
+def weight_training():
+    return "Weight Training Plan Coming Soon"
+
+@app.route('/strength_training')
+@login_required
+def strength_training():
+    return "Strength Training Plan Coming Soon"
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
