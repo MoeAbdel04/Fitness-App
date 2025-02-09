@@ -29,6 +29,15 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
+class BMIHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    height_ft = db.Column(db.Float, nullable=False)
+    height_in = db.Column(db.Float, nullable=False)
+    weight = db.Column(db.Float, nullable=False)
+    bmi = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
+
 class CalorieTracking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -47,6 +56,12 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
+
+class BMIForm(FlaskForm):
+    height_ft = FloatField('Height (ft)', validators=[DataRequired()])
+    height_in = FloatField('Height (in)', validators=[DataRequired()])
+    weight = FloatField('Weight (lbs)', validators=[DataRequired(), NumberRange(min=10, max=1000)])
+    submit = SubmitField('Calculate')
 
 class CaloriePlanForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=10, max=100)])
@@ -107,7 +122,47 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
+    calorie_history = CalorieTracking.query.filter_by(user_id=current_user.id).all()
+    
+    dates = [entry.date.strftime('%Y-%m-%d') for entry in bmi_history]
+    bmi_values = [entry.bmi for entry in bmi_history]
+    
+    fig, ax = plt.subplots()
+    ax.plot(dates, bmi_values, marker='o', linestyle='-')
+    ax.set_title('BMI Progress Over Time')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('BMI')
+    plt.xticks(rotation=45)
+    
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+    
+    return render_template('dashboard.html', bmi_history=bmi_history, calorie_history=calorie_history, plot_url=plot_url)
+
+@app.route('/bmi_calculator', methods=['GET', 'POST'])
+@login_required
+def bmi_calculator():
+    form = BMIForm()
+    bmi_result = None
+    if form.validate_on_submit():
+        # Convert height to inches
+        total_height_in = (form.height_ft.data * 12) + form.height_in.data
+        # Convert height to meters and weight to kg
+        height_m = total_height_in * 0.0254
+        weight_kg = form.weight.data * 0.453592
+        # Calculate BMI
+        bmi_result = weight_kg / (height_m ** 2)
+        # Save to history
+        new_bmi_entry = BMIHistory(user_id=current_user.id, height_ft=form.height_ft.data, height_in=form.height_in.data, weight=form.weight.data, bmi=bmi_result)
+        db.session.add(new_bmi_entry)
+        db.session.commit()
+        flash(f'BMI calculated successfully: {bmi_result:.2f}', 'success')
+        return redirect(url_for('bmi_calculator'))
+    bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
+    return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
 
 @app.route('/calorie_maintenance', methods=['GET', 'POST'])
 @login_required
