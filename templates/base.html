@@ -1,4 +1,3 @@
-<!-- base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,6 +13,9 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('bmi_calculator') }}">BMI Calculator</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('calorie_tracker') }}">Calorie Tracker</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('workout_selection') }}">Workouts</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
@@ -28,4 +30,3 @@
     </div>
 </body>
 </html>
-

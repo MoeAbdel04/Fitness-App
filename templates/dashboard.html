@@ -1,9 +1,22 @@
-<!-- dashboard.html -->
 {% extends "base.html" %}
 {% block title %}Dashboard - Fitness Pro{% endblock %}
 {% block content %}
 <div class="text-center">
     <h2>Welcome, {{ current_user.username }}!</h2>
-    <p>This is your dashboard.</p>
+    <h3>Your BMI Progress</h3>
+    {% if plot_url %}
+        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid" alt="BMI Progress Graph">
+    {% else %}
+        <p>No BMI history available.</p>
+    {% endif %}
+    
+    <h3>Your Calorie Intake History</h3>
+    <ul class="list-group">
+        {% for entry in calorie_history %}
+            <li class="list-group-item">{{ entry.date.strftime('%Y-%m-%d') }}: {{ entry.calories }} kcal</li>
+        {% else %}
+            <li class="list-group-item">No calorie intake recorded.</li>
+        {% endfor %}
+    </ul>
 </div>
-{% endblock %
+{% endblock %}
