@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -17,14 +17,13 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# User model
+# Models
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-# BMI History model
 class BMIHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -34,17 +33,11 @@ class BMIHistory(db.Model):
     bmi = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
 
-# Calorie Tracking model
 class CalorieTracking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     calories = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
-
-# Login manager user loader
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
 
 # Forms
 class RegistrationForm(FlaskForm):
@@ -128,7 +121,6 @@ def dashboard():
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     calorie_history = CalorieTracking.query.filter_by(user_id=current_user.id).all()
     
-    # Generate BMI Progress Graph
     dates = [entry.date.strftime('%Y-%m-%d') for entry in bmi_history]
     bmi_values = [entry.bmi for entry in bmi_history]
     
@@ -184,6 +176,26 @@ def calorie_plan():
         flash('Calorie maintenance and deficit plans calculated successfully!', 'success')
         return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
     return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
+
+@app.route('/workout_selection')
+@login_required
+def workout_selection():
+    return render_template('workout_selection.html')
+
+@app.route('/cardio_training')
+@login_required
+def cardio_training():
+    return "Cardio Training Plan Coming Soon"
+
+@app.route('/weight_training')
+@login_required
+def weight_training():
+    return "Weight Training Plan Coming Soon"
+
+@app.route('/strength_training')
+@login_required
+def strength_training():
+    return "Strength Training Plan Coming Soon"
 
 if __name__ == '__main__':
     with app.app_context():
