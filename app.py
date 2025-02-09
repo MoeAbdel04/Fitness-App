@@ -29,7 +29,8 @@ class User(db.Model, UserMixin):
 class BMIHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    height = db.Column(db.Float, nullable=False)
+    height_ft = db.Column(db.Float, nullable=False)
+    height_in = db.Column(db.Float, nullable=False)
     weight = db.Column(db.Float, nullable=False)
     bmi = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
@@ -45,8 +46,9 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class BMIForm(FlaskForm):
-    height = FloatField('Height (cm)', validators=[DataRequired(), NumberRange(min=50, max=300)])
-    weight = FloatField('Weight (kg)', validators=[DataRequired(), NumberRange(min=10, max=500)])
+    height_ft = FloatField('Height (ft)', validators=[DataRequired(message="Please enter the height in feet.")])
+    height_in = FloatField('Height (in)', validators=[DataRequired(message="Please enter the height in inches.")])
+    weight = FloatField('Weight (lbs)', validators=[DataRequired(message="Please enter the weight in pounds."), NumberRange(min=10, max=1000, message="Weight must be between 10 and 1000 lbs.")])
     submit = SubmitField('Calculate')
 
 class CalorieForm(FlaskForm):
@@ -141,12 +143,18 @@ def bmi_calculator():
     form = BMIForm()
     bmi_result = None
     if form.validate_on_submit():
-        height_m = form.height.data / 100
-        bmi_result = form.weight.data / (height_m ** 2)
-        new_bmi_entry = BMIHistory(user_id=current_user.id, height=form.height.data, weight=form.weight.data, bmi=bmi_result)
+        # Convert height to inches
+        total_height_in = (form.height_ft.data * 12) + form.height_in.data
+        # Convert height to meters and weight to kg
+        height_m = total_height_in * 0.0254
+        weight_kg = form.weight.data * 0.453592
+        # Calculate BMI
+        bmi_result = weight_kg / (height_m ** 2)
+        # Save to history
+        new_bmi_entry = BMIHistory(user_id=current_user.id, height_ft=form.height_ft.data, height_in=form.height_in.data, weight=form.weight.data, bmi=bmi_result)
         db.session.add(new_bmi_entry)
         db.session.commit()
-        flash('BMI calculation successful!', 'success')
+        flash(f'BMI calculated successfully: {bmi_result:.2f}', 'success')
         return redirect(url_for('bmi_calculator'))
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
