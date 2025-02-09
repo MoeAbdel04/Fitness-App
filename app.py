@@ -198,6 +198,12 @@ def calorie_plan():
 
     return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
+@app.route('/calorie_maintenance')
+@login_required
+def calorie_maintenance():
+    calorie_history = CalorieTracking.query.filter_by(user_id=current_user.id).all()
+    return render_template('calorie_maintenance.html', calorie_history=calorie_history)
+
 @app.route('/workout_selection')
 @login_required
 def workout_selection():
