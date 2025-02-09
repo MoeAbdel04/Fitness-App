@@ -6,32 +6,43 @@
     <form method="POST">
         {{ form.hidden_tag() }}
         <div class="mb-3">
-            <label for="calories" class="form-label">Calories Consumed</label>
-            {{ form.calories(class_='form-control', id='calories') }}
-            {% for error in form.calories.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
+            <label for="age" class="form-label">Age</label>
+            {{ form.age(class_='form-control', id='age') }}
         </div>
-        <button type="submit" class="btn btn-primary">Add Entry</button>
+        <div class="mb-3">
+            <label for="gender" class="form-label">Gender</label>
+            {{ form.gender(class_='form-control', id='gender') }}
+        </div>
+        <div class="mb-3">
+            <label for="height_ft" class="form-label">Height (Feet)</label>
+            {{ form.height_ft(class_='form-control', id='height_ft') }}
+        </div>
+        <div class="mb-3">
+            <label for="height_in" class="form-label">Height (Inches)</label>
+            {{ form.height_in(class_='form-control', id='height_in') }}
+        </div>
+        <div class="mb-3">
+            <label for="weight" class="form-label">Weight (lbs)</label>
+            {{ form.weight(class_='form-control', id='weight') }}
+        </div>
+        <div class="mb-3">
+            <label for="activity_level" class="form-label">Activity Level</label>
+            {{ form.activity_level(class_='form-select', id='activity_level') }}
+        </div>
+        <button type="submit" class="btn btn-primary">Calculate Maintenance</button>
     </form>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <h3 class="mt-4">Calorie History</h3>
-    <ul class="list-group">
-        {% for entry in calorie_history %}
-            <li class="list-group-item">
-                {{ entry.date.strftime('%Y-%m-%d') }}: {{ entry.calories }} kcal
-            </li>
-        {% else %}
-            <li class="list-group-item">No calorie history available.</li>
-        {% endfor %}
-    </ul>
+    {% if maintenance_calories %}
+        <div class="mt-4">
+            <h3>Calorie Maintenance</h3>
+            <p>Your maintenance calories: <strong>{{ maintenance_calories|round }}</strong> kcal</p>
+            <h4>Calorie Deficit Plans:</h4>
+            <ul>
+                <li>Light Deficit: <strong>{{ deficit_plan.light|round }}</strong> kcal</li>
+                <li>Medium Deficit: <strong>{{ deficit_plan.medium|round }}</strong> kcal</li>
+                <li>Extreme Deficit: <strong>{{ deficit_plan.extreme|round }}</strong> kcal</li>
+            </ul>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
