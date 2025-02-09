@@ -3,17 +3,27 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-center">Calorie Tracker</h2>
-
-    <form method="POST" class="mb-4">
+    <form method="POST">
         {{ form.hidden_tag() }}
         <div class="mb-3">
-            {{ form.calories.label }}
-            {{ form.calories(class_='form-control') }}
+            <label for="calories" class="form-label">Calories Consumed</label>
+            {{ form.calories(class_='form-control', id='calories') }}
+            {% for error in form.calories.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
         <button type="submit" class="btn btn-primary">Add Entry</button>
     </form>
 
-    <h3>Your Calorie History</h3>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <h3 class="mt-4">Calorie History</h3>
     <ul class="list-group">
         {% for entry in calorie_history %}
             <li class="list-group-item">
