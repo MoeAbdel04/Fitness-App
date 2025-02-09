@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Calorie Tracker - Fitness Pro{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Calorie Tracker</h2>
+
+    <form method="POST" class="mb-4">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.calories.label }}
+            {{ form.calories(class_='form-control') }}
+        </div>
+        <button type="submit" class="btn btn-primary">Add Entry</button>
+    </form>
+
+    <h3>Your Calorie History</h3>
+    <ul class="list-group">
+        {% for entry in calorie_history %}
+            <li class="list-group-item">
+                {{ entry.date.strftime('%Y-%m-%d') }}: {{ entry.calories }} kcal
+            </li>
+        {% else %}
+            <li class="list-group-item">No calorie history available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

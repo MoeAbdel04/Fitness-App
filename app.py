@@ -49,33 +49,28 @@ class BMIForm(FlaskForm):
     weight = FloatField('Weight (kg)', validators=[DataRequired(), NumberRange(min=10, max=500)])
     submit = SubmitField('Calculate')
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=4, max=50)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Sign Up')
-
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user:
-            raise ValidationError('Username already exists. Please choose a different one.')
-
-    def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email already registered. Use a different email.')
-
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+class CalorieForm(FlaskForm):
+    calories = FloatField('Calories Consumed', validators=[DataRequired(), NumberRange(min=0)])
+    submit = SubmitField('Add Entry')
 
 @app.route('/')
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
+
+@app.route('/calorie_tracker', methods=['GET', 'POST'])
+@login_required
+def calorie_tracker():
+    form = CalorieForm()
+    if form.validate_on_submit():
+        new_entry = CalorieTracking(user_id=current_user.id, calories=form.calories.data)
+        db.session.add(new_entry)
+        db.session.commit()
+        flash('Calorie entry added successfully!', 'success')
+        return redirect(url_for('calorie_tracker'))
+    calorie_history = CalorieTracking.query.filter_by(user_id=current_user.id).order_by(CalorieTracking.date.desc()).all()
+    return render_template('calorie_tracker.html', form=form, calorie_history=calorie_history)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
