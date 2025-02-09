@@ -161,6 +161,18 @@ def bmi_calculator():
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
 
+@app.route('/delete_bmi/<int:entry_id>')
+@login_required
+def delete_bmi(entry_id):
+    bmi_entry = BMIHistory.query.get_or_404(entry_id)
+    if bmi_entry.user_id != current_user.id:
+        flash('Unauthorized action!', 'danger')
+        return redirect(url_for('bmi_calculator'))
+    db.session.delete(bmi_entry)
+    db.session.commit()
+    flash('BMI entry deleted successfully.', 'success')
+    return redirect(url_for('bmi_calculator'))
+
 @app.route('/calorie_plan', methods=['GET', 'POST'])
 @login_required
 def calorie_plan():
