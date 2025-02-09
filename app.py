@@ -17,15 +17,14 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+# User model
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
-    def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
-
+# BMI History model
 class BMIHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -35,20 +34,35 @@ class BMIHistory(db.Model):
     bmi = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
 
+# Calorie Tracking model
 class CalorieTracking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     calories = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
 
+# Login manager user loader
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Forms
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=50)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
 class BMIForm(FlaskForm):
-    height_ft = FloatField('Height (ft)', validators=[DataRequired(message="Please enter the height in feet.")])
-    height_in = FloatField('Height (in)', validators=[DataRequired(message="Please enter the height in inches.")])
-    weight = FloatField('Weight (lbs)', validators=[DataRequired(message="Please enter the weight in pounds."), NumberRange(min=10, max=1000, message="Weight must be between 10 and 1000 lbs.")])
+    height_ft = FloatField('Height (ft)', validators=[DataRequired()])
+    height_in = FloatField('Height (in)', validators=[DataRequired()])
+    weight = FloatField('Weight (lbs)', validators=[DataRequired(), NumberRange(min=10, max=1000)])
     submit = SubmitField('Calculate')
 
 class CaloriePlanForm(FlaskForm):
@@ -63,42 +77,10 @@ class CaloriePlanForm(FlaskForm):
         ('moderate', 'Moderately active (moderate exercise/sports 3-5 days/week)'),
         ('very', 'Very active (hard exercise/sports 6-7 days a week)')
     ], validators=[DataRequired()])
+    calories = FloatField('Calories Consumed', validators=[DataRequired()])
     submit = SubmitField('Calculate Maintenance and Plan')
 
-@app.route('/calorie_plan', methods=['GET', 'POST'])
-@login_required
-def calorie_plan():
-    form = CaloriePlanForm()
-    maintenance_calories = None
-    deficit_plan = {}
-
-    if form.validate_on_submit():
-        # Calculate BMR
-        total_height_in = (form.height_ft.data * 12) + form.height_in.data
-        if form.gender.data == 'male':
-            bmr = 66 + (6.23 * form.weight.data) + (12.7 * total_height_in) - (6.8 * form.age.data)
-        else:
-            bmr = 655 + (4.35 * form.weight.data) + (4.7 * total_height_in) - (4.7 * form.age.data)
-
-        # Calculate TDEE (Total Daily Energy Expenditure)
-        activity_multipliers = {
-            'sedentary': 1.2,
-            'light': 1.375,
-            'moderate': 1.55,
-            'very': 1.725
-        }
-        maintenance_calories = bmr * activity_multipliers[form.activity_level.data]
-
-        # Calculate deficit plans
-        deficit_plan['light'] = maintenance_calories * 0.9
-        deficit_plan['medium'] = maintenance_calories * 0.8
-        deficit_plan['extreme'] = maintenance_calories * 0.7
-
-        flash('Calorie maintenance and deficit plans calculated successfully!', 'success')
-        return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
-
-    return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
-
+# Routes
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -128,6 +110,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
+            flash('Logged in successfully!', 'success')
             return redirect(url_for('dashboard'))
         else:
             flash('Login unsuccessful. Please check email and password.', 'danger')
@@ -169,14 +152,10 @@ def bmi_calculator():
     form = BMIForm()
     bmi_result = None
     if form.validate_on_submit():
-        # Convert height to inches
         total_height_in = (form.height_ft.data * 12) + form.height_in.data
-        # Convert height to meters and weight to kg
         height_m = total_height_in * 0.0254
         weight_kg = form.weight.data * 0.453592
-        # Calculate BMI
         bmi_result = weight_kg / (height_m ** 2)
-        # Save to history
         new_bmi_entry = BMIHistory(user_id=current_user.id, height_ft=form.height_ft.data, height_in=form.height_in.data, weight=form.weight.data, bmi=bmi_result)
         db.session.add(new_bmi_entry)
         db.session.commit()
@@ -185,37 +164,26 @@ def bmi_calculator():
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
 
-@app.route('/delete_bmi/<int:entry_id>')
+@app.route('/calorie_plan', methods=['GET', 'POST'])
 @login_required
-def delete_bmi(entry_id):
-    bmi_entry = BMIHistory.query.get_or_404(entry_id)
-    if bmi_entry.user_id != current_user.id:
-        flash('Unauthorized action!', 'danger')
-        return redirect(url_for('bmi_calculator'))
-    db.session.delete(bmi_entry)
-    db.session.commit()
-    flash('BMI entry deleted successfully.', 'success')
-    return redirect(url_for('bmi_calculator'))
-
-@app.route('/workout_selection')
-@login_required
-def workout_selection():
-    return render_template('workout_selection.html')
-
-@app.route('/cardio_training')
-@login_required
-def cardio_training():
-    return "Cardio Training Plan Coming Soon"
-
-@app.route('/weight_training')
-@login_required
-def weight_training():
-    return "Weight Training Plan Coming Soon"
-
-@app.route('/strength_training')
-@login_required
-def strength_training():
-    return "Strength Training Plan Coming Soon"
+def calorie_plan():
+    form = CaloriePlanForm()
+    maintenance_calories = None
+    deficit_plan = {}
+    if form.validate_on_submit():
+        total_height_in = (form.height_ft.data * 12) + form.height_in.data
+        if form.gender.data == 'male':
+            bmr = 66 + (6.23 * form.weight.data) + (12.7 * total_height_in) - (6.8 * form.age.data)
+        else:
+            bmr = 655 + (4.35 * form.weight.data) + (4.7 * total_height_in) - (4.7 * form.age.data)
+        activity_multipliers = {'sedentary': 1.2, 'light': 1.375, 'moderate': 1.55, 'very': 1.725}
+        maintenance_calories = bmr * activity_multipliers[form.activity_level.data]
+        deficit_plan['light'] = maintenance_calories * 0.9
+        deficit_plan['medium'] = maintenance_calories * 0.8
+        deficit_plan['extreme'] = maintenance_calories * 0.7
+        flash('Calorie maintenance and deficit plans calculated successfully!', 'success')
+        return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
+    return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
 if __name__ == '__main__':
     with app.app_context():
