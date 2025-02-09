@@ -164,11 +164,12 @@ def bmi_calculator():
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
 
-@app.route('/calorie_maintenance', methods=['GET', 'POST'])
+@app.route('/calorie_plan', methods=['GET', 'POST'])
 @login_required
-def calorie_maintenance():
+def calorie_plan():
     form = CaloriePlanForm()
     maintenance_calories = None
+    deficit_plan = {}
 
     if form.validate_on_submit():
         # Calculate BMR
@@ -178,7 +179,7 @@ def calorie_maintenance():
         else:
             bmr = 655 + (4.35 * form.weight.data) + (4.7 * total_height_in) - (4.7 * form.age.data)
 
-        # Calculate TDEE
+        # Calculate TDEE (Total Daily Energy Expenditure)
         activity_multipliers = {
             'sedentary': 1.2,
             'light': 1.375,
@@ -187,8 +188,15 @@ def calorie_maintenance():
         }
         maintenance_calories = bmr * activity_multipliers[form.activity_level.data]
 
-        flash(f"Your Maintenance Calories: {maintenance_calories:.2f} kcal", 'success')
-    return render_template('calorie_maintenance.html', form=form, maintenance_calories=maintenance_calories)
+        # Calculate deficit plans
+        deficit_plan['light'] = maintenance_calories * 0.9
+        deficit_plan['medium'] = maintenance_calories * 0.8
+        deficit_plan['extreme'] = maintenance_calories * 0.7
+
+        flash('Calorie maintenance and deficit plans calculated successfully!', 'success')
+        return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
+
+    return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
 if __name__ == '__main__':
     with app.app_context():
