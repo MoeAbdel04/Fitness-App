@@ -171,29 +171,6 @@ def delete_bmi(entry_id):
     flash('BMI entry deleted successfully.', 'success')
     return redirect(url_for('bmi_calculator'))
 
-@app.route('/calorie_maintenance', methods=['GET', 'POST'])
-@login_required
-def calorie_maintenance():
-    form = CaloriePlanForm()
-    maintenance_calories = None
-    if form.validate_on_submit():
-        total_height_in = (form.height_ft.data * 12) + form.height_in.data
-        if form.gender.data == 'male':
-            bmr = 66 + (6.23 * form.weight.data) + (12.7 * total_height_in) - (6.8 * form.age.data)
-        else:
-            bmr = 655 + (4.35 * form.weight.data) + (4.7 * total_height_in) - (4.7 * form.age.data)
-
-        activity_multipliers = {
-            'sedentary': 1.2,
-            'light': 1.375,
-            'moderate': 1.55,
-            'very': 1.725
-        }
-        maintenance_calories = bmr * activity_multipliers[form.activity_level.data]
-
-        flash('Calorie maintenance calculated successfully!', 'success')
-    return render_template('calorie_maintenance.html', form=form, maintenance_calories=maintenance_calories)
-
 @app.route('/calorie_plan', methods=['GET', 'POST'])
 @login_required
 def calorie_plan():
@@ -227,6 +204,53 @@ def calorie_plan():
         return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
 
     return render_template('calorie_plan.html', form=form, maintenance_calories=maintenance_calories, deficit_plan=deficit_plan)
+
+@app.route('/workout_selection')
+@login_required
+def workout_selection():
+    return render_template('workout_selection.html')
+
+@app.route('/cardio_training')
+@login_required
+def cardio_training():
+    workout_details = {
+        "title": "Cardio Training",
+        "description": "Improve your cardiovascular health with running, cycling, or swimming.",
+        "example_workout": [
+            "5-minute warm-up",
+            "20 minutes of running or cycling at a steady pace",
+            "5-minute cool-down"
+        ]
+    }
+    return render_template('workout_details.html', workout=workout_details)
+
+@app.route('/weight_training')
+@login_required
+def weight_training():
+    workout_details = {
+        "title": "Weight Training",
+        "description": "Build muscle and strength with a focus on lifting weights.",
+        "example_workout": [
+            "3 sets of 12 squats",
+            "3 sets of 12 bench presses",
+            "3 sets of 12 deadlifts"
+        ]
+    }
+    return render_template('workout_details.html', workout=workout_details)
+
+@app.route('/strength_training')
+@login_required
+def strength_training():
+    workout_details = {
+        "title": "Strength Training",
+        "description": "Enhance strength with high-intensity weightlifting routines.",
+        "example_workout": [
+            "5 sets of 5 squats",
+            "5 sets of 5 bench presses",
+            "5 sets of 5 overhead presses"
+        ]
+    }
+    return render_template('workout_details.html', workout=workout_details)
 
 if __name__ == '__main__':
     with app.app_context():
