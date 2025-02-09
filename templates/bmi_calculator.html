@@ -6,15 +6,24 @@
     <form method="POST">
         {{ form.hidden_tag() }}
         <div class="mb-3">
-            <label for="height" class="form-label">Height (cm)</label>
-            {{ form.height(class_='form-control', id='height') }}
-            {% for error in form.height.errors %}
+            <label for="height" class="form-label">Height</label>
+            <div class="input-group">
+                {{ form.height_ft(class_='form-control', id='height_ft', placeholder='Feet') }}
+                <span class="input-group-text">ft</span>
+                {{ form.height_in(class_='form-control', id='height_in', placeholder='Inches') }}
+                <span class="input-group-text">in</span>
+            </div>
+            {% for error in form.height_ft.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+            {% for error in form.height_in.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
         <div class="mb-3">
-            <label for="weight" class="form-label">Weight (kg)</label>
-            {{ form.weight(class_='form-control', id='weight') }}
+            <label for="weight" class="form-label">Weight</label>
+            {{ form.weight(class_='form-control', id='weight', placeholder='Pounds') }}
+            <span class="form-text">lbs</span>
             {% for error in form.weight.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
@@ -32,7 +41,7 @@
     <ul class="list-group">
         {% for entry in bmi_history %}
             <li class="list-group-item">
-                {{ entry.date.strftime('%Y-%m-%d') }}: BMI {{ entry.bmi|round(2) }} (Height: {{ entry.height }} cm, Weight: {{ entry.weight }} kg)
+                {{ entry.date.strftime('%Y-%m-%d') }}: BMI {{ entry.bmi|round(2) }} (Height: {{ entry.height_ft }} ft {{ entry.height_in }} in, Weight: {{ entry.weight }} lbs)
                 <a href="{{ url_for('delete_bmi', entry_id=entry.id) }}" class="btn btn-danger btn-sm float-end">Delete</a>
             </li>
         {% else %}
