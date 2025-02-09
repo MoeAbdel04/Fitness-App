@@ -53,6 +53,11 @@ class CalorieForm(FlaskForm):
     calories = FloatField('Calories Consumed', validators=[DataRequired(), NumberRange(min=0)])
     submit = SubmitField('Add Entry')
 
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
 @app.route('/')
 def index():
     if current_user.is_authenticated:
@@ -141,6 +146,8 @@ def bmi_calculator():
         new_bmi_entry = BMIHistory(user_id=current_user.id, height=form.height.data, weight=form.weight.data, bmi=bmi_result)
         db.session.add(new_bmi_entry)
         db.session.commit()
+        flash('BMI calculation successful!', 'success')
+        return redirect(url_for('bmi_calculator'))
     bmi_history = BMIHistory.query.filter_by(user_id=current_user.id).all()
     return render_template('bmi_calculator.html', form=form, bmi_result=bmi_result, bmi_history=bmi_history)
 
