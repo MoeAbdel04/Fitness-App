@@ -15,7 +15,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 # Import blueprints (to be created later)
-from auth import auth_bp
+from backend.auth import auth_bp
 from bmi import bmi_bp
 from calorie import calorie_bp
 from workout import workout_bp
