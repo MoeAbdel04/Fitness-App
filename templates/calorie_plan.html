@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Calorie Plan - Fit Fusion{% endblock %}
+{% block content %}
+<div class="container p-4 shadow-lg rounded">
+    <h2 class="text-center">Calorie Plan</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">{{ form.age.label }} {{ form.age(class_='form-control') }}</div>
+        <div class="mb-3">{{ form.gender.label }} {{ form.gender(class_='form-control') }}</div>
+        <div class="mb-3">{{ form.height_ft.label }} {{ form.height_ft(class_='form-control') }}</div>
+        <div class="mb-3">{{ form.height_in.label }} {{ form.height_in(class_='form-control') }}</div>
+        <div class="mb-3">{{ form.weight.label }} {{ form.weight(class_='form-control') }}</div>
+        <div class="mb-3">{{ form.activity_level.label }} {{ form.activity_level(class_='form-select') }}</div>
+        <button type="submit" class="btn w-100">Calculate Maintenance</button>
+    </form>
+
+    {% if maintenance_calories %}
+        <div class="mt-4">
+            <h3>Calorie Maintenance</h3>
+            <p>Your maintenance calories: <strong>{{ maintenance_calories|round }}</strong> kcal</p>
+            <h4>Calorie Deficit Plans:</h4>
+            <ul>
+                <li>Light Deficit: <strong>{{ deficit_plan.light|round }}</strong> kcal</li>
+                <li>Medium Deficit: <strong>{{ deficit_plan.medium|round }}</strong> kcal</li>
+                <li>Extreme Deficit: <strong>{{ deficit_plan.extreme|round }}</strong> kcal</li>
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

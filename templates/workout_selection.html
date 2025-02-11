@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Workout Selection - Fit Fusion{% endblock %}
+{% block content %}
+<div class="container p-4 shadow-lg rounded text-center">
+    <h2>Select Your Workout Plan</h2>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <a href="{{ url_for('workout.cardio_training') }}" class="btn btn-success w-100 p-3">Cardio Training</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('workout.weight_training') }}" class="btn btn-warning w-100 p-3">Weight Training</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('workout.strength_training') }}" class="btn btn-danger w-100 p-3">Strength Training</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
