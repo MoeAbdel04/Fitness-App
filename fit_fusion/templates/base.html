@@ -1,91 +1,45 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit Fusion</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
     <style>
-        /* 🔹 Restore Original Navbar & Layout */
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-
-        /* 🔹 Navbar Styling */
+        /* 🔹 Fix Navbar Visibility */
         .navbar {
-            background-color: #007bff !important;
+            background-color: #343a40 !important; /* Dark navbar */
+        }
+        .navbar a, .navbar-brand, .nav-link {
+            color: white !important; /* White text */
+        }
+        .navbar a:hover {
+            color: #f8f9fa !important; /* Lighter hover effect */
         }
 
-        .navbar-brand, .navbar-nav .nav-link {
-            color: white !important;
+        /* 🔹 Improve Layout & Contrast */
+        body {
+            background-color: #f8f9fa; /* Light background */
         }
-
-        .navbar-toggler {
-            border-color: white;
+        .container {
+            max-width: 900px;
+            margin-top: 30px;
         }
-
-        /* 🔹 Chatbox Button */
-        .chat-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .chat-button:hover {
-            background-color: #0056b3;
-        }
-
-        /* 🔹 Chat Popup */
-        #chatPopup {
-            display: none;
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 300px;
+        .card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-        }
-
-        #chatMessages {
-            height: 200px;
-            overflow-y: auto;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        #chatInput {
-            width: 100%;
-            padding: 5px;
-        }
-
-        .chat-header {
-            font-weight: bold;
-            text-align: center;
-            padding: 5px;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
 
-    <!-- 🔹 Navigation Bar -->
+    <!-- 🔹 Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
@@ -94,8 +48,8 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                     {% if 'user_id' in session %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
@@ -106,57 +60,12 @@
         </div>
     </nav>
 
-    <!-- 🔹 Main Content -->
-    <div class="container mt-4">
+    <!-- 🔹 Page Content -->
+    <div class="container">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- 🔹 Chatbot Popup -->
-    <div id="chatPopup">
-        <div class="chat-header">AI Chat</div>
-        <div id="chatMessages"></div>
-        <input type="text" id="chatInput" placeholder="Type a message...">
-        <button class="btn btn-primary btn-sm mt-2" onclick="sendMessage()">Send</button>
-    </div>
-
-    <!-- 🔹 Chat Button -->
-    <button class="chat-button" onclick="toggleChat()">💬 Chat with AI</button>
-
-    <!-- 🔹 JavaScript & Bootstrap -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleChat() {
-            let chatPopup = document.getElementById('chatPopup');
-            chatPopup.style.display = (chatPopup.style.display === 'none' || chatPopup.style.display === '') ? 'block' : 'none';
-        }
-
-        function sendMessage() {
-            let inputField = document.getElementById('chatInput');
-            let message = inputField.value.trim();
-            if (message === '') return;
-
-            // Display user message
-            let chatMessages = document.getElementById('chatMessages');
-            let userMessage = document.createElement('div');
-            userMessage.innerHTML = "<strong>You:</strong> " + message;
-            chatMessages.appendChild(userMessage);
-
-            // Send message to AI backend
-            fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                let aiReply = document.createElement('div');
-                aiReply.innerHTML = "<strong>AI:</strong> " + data.reply;
-                chatMessages.appendChild(aiReply);
-            })
-            .catch(error => console.error('Error:', error));
-
-            inputField.value = '';
-        }
-    </script>
 </body>
 </html>
