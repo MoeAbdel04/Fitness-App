@@ -7,87 +7,86 @@
     <title>Fit Fusion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* General Page Styling */
+        /* Restoring previous look */
         body {
             background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
         }
 
         .container {
-            margin-top: 30px;
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
 
+        /* Navbar styling fix */
         .navbar {
             background: linear-gradient(to right, #007bff, #0056b3);
         }
 
-        .navbar-brand {
-            font-weight: bold;
+        .navbar-brand, .navbar-nav .nav-link {
+            color: white !important;
         }
 
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #0056b3;
+        .navbar-toggler {
+            border-color: white;
         }
 
-        /* Chatbot Styling */
-        #chatbox-container {
+        /* Chatbox button styling */
+        .chat-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 300px;
-        }
-
-        #toggle-chatbox {
-            width: 100%;
-            padding: 10px;
             background-color: #007bff;
             color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
-        #chatbox {
+        .chat-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Chat popup */
+        #chatPopup {
             display: none;
-            flex-direction: column;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 10px;
         }
 
-        #chat-messages {
+        #chatMessages {
             height: 200px;
             overflow-y: auto;
             padding: 10px;
             border-bottom: 1px solid #ddd;
         }
 
-        #chat-input {
-            flex-grow: 1;
-            padding: 8px;
-            border: none;
+        #chatInput {
             width: 100%;
+            padding: 5px;
         }
 
-        #send-chat {
-            padding: 8px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
+        .chat-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
         }
     </style>
 </head>
 <body>
+
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -107,55 +106,57 @@
         </div>
     </nav>
 
-    <!-- Page Content -->
+    <!-- Main Content -->
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- AI Chatbot Section -->
-    <div id="chatbox-container">
-        <button id="toggle-chatbox">💬 Chat with AI</button>
-        <div id="chatbox">
-            <div id="chat-messages"></div>
-            <input type="text" id="chat-input" placeholder="Ask me anything..." />
-            <button id="send-chat">Send</button>
-        </div>
+    <!-- Chatbot Popup -->
+    <div id="chatPopup">
+        <div class="chat-header">AI Chat</div>
+        <div id="chatMessages"></div>
+        <input type="text" id="chatInput" placeholder="Type a message...">
+        <button class="btn btn-primary btn-sm mt-2" onclick="sendMessage()">Send</button>
     </div>
 
+    <!-- Chat Button -->
+    <button class="chat-button" onclick="toggleChat()">💬 Chat with AI</button>
+
+    <!-- JavaScript & Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Chatbox Toggle
-        document.getElementById("toggle-chatbox").addEventListener("click", function() {
-            var chatbox = document.getElementById("chatbox");
-            chatbox.style.display = chatbox.style.display === "block" ? "none" : "block";
-        });
+        function toggleChat() {
+            let chatPopup = document.getElementById('chatPopup');
+            chatPopup.style.display = (chatPopup.style.display === 'none' || chatPopup.style.display === '') ? 'block' : 'none';
+        }
 
-        // Chatbox Messaging
-        document.getElementById("send-chat").addEventListener("click", function() {
-            var userInput = document.getElementById("chat-input").value;
-            var chatMessages = document.getElementById("chat-messages");
+        function sendMessage() {
+            let inputField = document.getElementById('chatInput');
+            let message = inputField.value.trim();
+            if (message === '') return;
 
-            if (!userInput.trim()) return;
+            // Display user message
+            let chatMessages = document.getElementById('chatMessages');
+            let userMessage = document.createElement('div');
+            userMessage.innerHTML = "<strong>You:</strong> " + message;
+            chatMessages.appendChild(userMessage);
 
-            chatMessages.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
-            document.getElementById("chat-input").value = "";
-
-            fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput })
+            // Send message to AI backend
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.reply) {
-                    chatMessages.innerHTML += `<p><strong>AI:</strong> ${data.reply}</p>`;
-                } else {
-                    chatMessages.innerHTML += `<p><strong>AI:</strong> Error processing response.</p>`;
-                }
+                let aiReply = document.createElement('div');
+                aiReply.innerHTML = "<strong>AI:</strong> " + data.reply;
+                chatMessages.appendChild(aiReply);
             })
-            .catch(error => console.error("Error:", error));
-        });
-    </script>
+            .catch(error => console.error('Error:', error));
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            inputField.value = '';
+        }
+    </script>
 </body>
 </html>
