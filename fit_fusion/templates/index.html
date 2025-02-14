@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1>Welcome to Fit Fusion</h1>
+    <p>Your personal fitness tracker to help you stay on top of your goals.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+</div>
+{% endblock %}
