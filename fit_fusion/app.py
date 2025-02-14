@@ -11,6 +11,9 @@ import os
 import io
 import base64
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import os
+import openai
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
