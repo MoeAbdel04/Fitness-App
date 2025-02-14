@@ -86,6 +86,23 @@ def register():
         return redirect(url_for('login'))
     
     return render_template('register.html')
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials, please try again.', 'danger')
+    
+    return render_template('login.html')
+
 
 @app.route('/dashboard')
 def dashboard():
