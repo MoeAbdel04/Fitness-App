@@ -6,15 +6,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit Fusion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-</head>
-<body class="light-mode">
+    <style>
+        /* General Page Styling */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
 
-    <!-- NAVIGATION BAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        .container {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            background: linear-gradient(to right, #007bff, #0056b3);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #0056b3;
+        }
+
+        /* Chatbot Styling */
+        #chatbox-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+        }
+
+        #toggle-chatbox {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #chatbox {
+            display: none;
+            flex-direction: column;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            width: 100%;
+        }
+
+        #send-chat {
+            padding: 8px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">🏋️‍♂️ Fit Fusion</a>
+            <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -27,45 +102,60 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
                     {% endif %}
-                    <li class="nav-item">
-                        <button id="theme-toggle" class="btn btn-outline-light ms-2">🌙</button>
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- FLASH MESSAGES -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} fade show" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <!-- MAIN CONTENT -->
+    <!-- Page Content -->
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- FOOTER -->
-    <footer class="text-center mt-5 py-3 bg-dark text-light">
-        <p class="mb-0">© 2025 Fit Fusion | Designed for fitness enthusiasts</p>
-    </footer>
+    <!-- AI Chatbot Section -->
+    <div id="chatbox-container">
+        <button id="toggle-chatbox">💬 Chat with AI</button>
+        <div id="chatbox">
+            <div id="chat-messages"></div>
+            <input type="text" id="chat-input" placeholder="Ask me anything..." />
+            <button id="send-chat">Send</button>
+        </div>
+    </div>
 
-    <!-- BOOTSTRAP & DARK MODE TOGGLE SCRIPT -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('theme-toggle').addEventListener('click', function () {
-            document.body.classList.toggle('dark-mode');
-            this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        // Chatbox Toggle
+        document.getElementById("toggle-chatbox").addEventListener("click", function() {
+            var chatbox = document.getElementById("chatbox");
+            chatbox.style.display = chatbox.style.display === "block" ? "none" : "block";
+        });
+
+        // Chatbox Messaging
+        document.getElementById("send-chat").addEventListener("click", function() {
+            var userInput = document.getElementById("chat-input").value;
+            var chatMessages = document.getElementById("chat-messages");
+
+            if (!userInput.trim()) return;
+
+            chatMessages.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+            document.getElementById("chat-input").value = "";
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.reply) {
+                    chatMessages.innerHTML += `<p><strong>AI:</strong> ${data.reply}</p>`;
+                } else {
+                    chatMessages.innerHTML += `<p><strong>AI:</strong> Error processing response.</p>`;
+                }
+            })
+            .catch(error => console.error("Error:", error));
         });
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
