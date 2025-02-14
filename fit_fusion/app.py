@@ -177,14 +177,18 @@ def log_workout():
     exercise = request.form['exercise']
     sets = int(request.form['sets'])
     reps = int(request.form['reps'])
-    weight = float(request.form['weight']) if 'weight' in request.form and request.form['weight'] else None
+    
+    # Convert weight from lbs → kg before storing
+    weight_lbs = request.form.get('weight')
+    weight_kg = round(float(weight_lbs) / 2.20462, 2) if weight_lbs else None
 
-    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps, weight=weight)
+    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps, weight=weight_kg)
     db.session.add(new_log)
     db.session.commit()
     
     flash('Workout logged successfully!', 'success')
     return redirect(url_for('dashboard'))
+
 @app.route('/logout')
 def logout():
     session.clear()
