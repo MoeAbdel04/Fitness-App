@@ -15,33 +15,6 @@
 
     <h3 class="mt-4">Workout History</h3>
 
-    <!-- Filter Form -->
-    <form method="GET" action="{{ url_for('dashboard') }}" class="mb-3">
-        <div class="row">
-            <div class="col-md-4">
-                <label for="start_date" class="form-label">Start Date:</label>
-                <input type="date" name="start_date" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <label for="end_date" class="form-label">End Date:</label>
-                <input type="date" name="end_date" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <label for="sort_by" class="form-label">Sort By:</label>
-                <select name="sort_by" class="form-select">
-                    <option value="date_desc">Date (Newest First)</option>
-                    <option value="date_asc">Date (Oldest First)</option>
-                    <option value="reps_desc">Reps (Highest First)</option>
-                    <option value="reps_asc">Reps (Lowest First)</option>
-                    <option value="exercise_asc">Exercise (A-Z)</option>
-                    <option value="exercise_desc">Exercise (Z-A)</option>
-                </select>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
-    </form>
-
-    <!-- Workout Table -->
     <table class="table table-striped">
         <thead>
             <tr>
@@ -50,6 +23,7 @@
                 <th>Exercise</th>
                 <th>Sets</th>
                 <th>Reps</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -60,7 +34,46 @@
                 <td>{{ workout.exercise }}</td>
                 <td>{{ workout.sets }}</td>
                 <td>{{ workout.reps }}</td>
+                <td>
+                    <!-- Edit Button -->
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editWorkout{{ workout.id }}">Edit</button>
+
+                    <!-- Delete Button -->
+                    <form method="POST" action="{{ url_for('delete_workout', workout_id=workout.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
             </tr>
+
+            <!-- Edit Workout Modal -->
+            <div class="modal fade" id="editWorkout{{ workout.id }}" tabindex="-1" aria-labelledby="editWorkoutLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Workout</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{{ url_for('edit_workout', workout_id=workout.id) }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Exercise</label>
+                                    <input type="text" name="exercise" class="form-control" value="{{ workout.exercise }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Sets</label>
+                                    <input type="number" name="sets" class="form-control" value="{{ workout.sets }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Reps</label>
+                                    <input type="number" name="reps" class="form-control" value="{{ workout.reps }}" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% endfor %}
         </tbody>
     </table>
