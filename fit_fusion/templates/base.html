@@ -10,20 +10,26 @@
     
     <!-- Custom Styles -->
     <style>
-        /* 🔹 Fix Navbar Visibility */
+        /* 🔹 Fix Navbar & Add Effects */
         .navbar {
             background-color: #343a40 !important; /* Dark navbar */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Shadow */
+            transition: all 0.3s ease-in-out;
         }
         .navbar a, .navbar-brand, .nav-link {
-            color: white !important; /* White text */
+            color: white !important;
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
         }
-        .navbar a:hover {
-            color: #f8f9fa !important; /* Lighter hover effect */
+        .navbar a:hover, .nav-link:hover {
+            color: #ffc107 !important; /* Yellow hover */
+            transform: scale(1.05);
         }
 
-        /* 🔹 Improve Layout & Contrast */
+        /* 🔹 Improve Layout & Effects */
         body {
             background-color: #f8f9fa; /* Light background */
+            font-family: 'Arial', sans-serif;
         }
         .container {
             max-width: 900px;
@@ -33,7 +39,45 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+            transform: scale(1.02);
+        }
+
+        /* 🔹 AI Chatbox Styles */
+        #chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            border-radius: 50px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        #chatbox:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+
+        /* 🔹 AI Chatbox Popup */
+        #chat-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+            display: none; /* Initially hidden */
         }
     </style>
 </head>
@@ -64,6 +108,26 @@
     <div class="container">
         {% block content %}{% endblock %}
     </div>
+
+    <!-- 🔹 AI Chatbox Button -->
+    <div id="chatbox" onclick="toggleChat()">💬 Chat with AI</div>
+
+    <!-- 🔹 AI Chatbox Container -->
+    <div id="chat-container">
+        <iframe src="{{ url_for('chat_ai') }}" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
+
+    <!-- 🔹 JavaScript -->
+    <script>
+        function toggleChat() {
+            var chatContainer = document.getElementById("chat-container");
+            if (chatContainer.style.display === "none") {
+                chatContainer.style.display = "block";
+            } else {
+                chatContainer.style.display = "none";
+            }
+        }
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
