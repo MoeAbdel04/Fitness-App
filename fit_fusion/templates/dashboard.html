@@ -1,85 +1,82 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mt-5">
-    <h2>Welcome, {{ user.username }}</h2>
+<div class="container mt-4">
+    <div class="card p-4">
+        <h2 class="mb-3 text-center">Welcome, {{ user.username }}</h2>
 
-    <p><strong>BMI:</strong> {{ bmi }}</p>
-
-    <!-- Convert Height to Feet & Inches -->
-    <p><strong>Height:</strong> 
-        {% set total_inches = (user.height * 39.37) | round %}
-        {% set feet = (total_inches // 12)|int %}
-        {% set inches = (total_inches % 12)|int %}
-        {{ feet }}' {{ inches }}" (Feet & Inches)
-    </p>
-
-    <!-- Convert Weight to Pounds -->
-    <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
-    <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
-
-    <h3>Fitness Progress</h3>
-{% if plot_url %}
-    <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid">
-{% else %}
-    <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
-{% endif %}
-
-
-    <h3>Log a Workout</h3>
-    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
-        <div class="mb-3">
-            <label class="form-label">Workout Type</label>
-            <select name="workout_type" class="form-control">
-                <option value="Cardio">Cardio</option>
-                <option value="Weight Training">Weight Training</option>
-                <option value="Strength Training">Strength Training</option>
-            </select>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>BMI:</strong> {{ bmi }}</p>
+                <p><strong>Height:</strong> {{ user.height | round(1) }} meters</p>
+                <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
+                <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Exercise</label>
-            <input type="text" name="exercise" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Sets</label>
-            <input type="number" name="sets" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Reps</label>
-            <input type="number" name="reps" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Current Weight (lbs)</label>
-            <input type="number" step="0.1" name="weight" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Log Workout</button>
-    </form>
 
-    <h3 class="mt-4">Workout History</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Workout Type</th>
-                <th>Exercise</th>
-                <th>Sets</th>
-                <th>Reps</th>
-                <th>Weight (lbs)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for workout in workouts %}
-            <tr>
-                <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ workout.workout_type }}</td>
-                <td>{{ workout.exercise }}</td>
-                <td>{{ workout.sets }}</td>
-                <td>{{ workout.reps }}</td>
-                <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
+        <h3 class="mt-4">Fitness Progress</h3>
+        <div class="chart-container">
+            {% if plot_url %}
+                <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow">
+            {% else %}
+                <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
+            {% endif %}
+        </div>
+
+        <h3 class="mt-4">Log a Workout</h3>
+        <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
+            <div class="mb-3">
+                <label class="form-label">Workout Type</label>
+                <select name="workout_type" class="form-control">
+                    <option value="Cardio">Cardio</option>
+                    <option value="Weight Training">Weight Training</option>
+                    <option value="Strength Training">Strength Training</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Exercise</label>
+                <input type="text" name="exercise" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Sets</label>
+                <input type="number" name="sets" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Reps</label>
+                <input type="number" name="reps" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Current Weight (lbs)</label>
+                <input type="number" step="0.1" name="weight" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Log Workout</button>
+        </form>
+
+        <h3 class="mt-4">Workout History</h3>
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Workout Type</th>
+                    <th>Exercise</th>
+                    <th>Sets</th>
+                    <th>Reps</th>
+                    <th>Weight (lbs)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workout in workouts %}
+                <tr>
+                    <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ workout.workout_type }}</td>
+                    <td>{{ workout.exercise }}</td>
+                    <td>{{ workout.sets }}</td>
+                    <td>{{ workout.reps }}</td>
+                    <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
