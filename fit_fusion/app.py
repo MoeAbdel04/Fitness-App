@@ -178,6 +178,11 @@ def log_workout():
     
     flash('Workout logged successfully!', 'success')
     return redirect(url_for('dashboard'))
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     with app.app_context():
