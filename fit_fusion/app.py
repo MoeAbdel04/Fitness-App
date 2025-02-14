@@ -134,11 +134,7 @@ def workout_chart():
     user = User.query.get(session['user_id'])
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
 
-    if not workouts:
-        flash('No workout data available to generate the graph.', 'warning')
-        return redirect(url_for('dashboard'))
-
-    # Get dates and weights where weight data exists
+    # Get valid data points
     dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
     weights = [workout.weight for workout in workouts if workout.weight]
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
@@ -147,20 +143,21 @@ def workout_chart():
         flash('No valid weight data available to generate the graph.', 'warning')
         return redirect(url_for('dashboard'))
 
-    # Create the plot
-    plt.figure(figsize=(8, 4))
-    plt.plot(dates, weights, marker='o', linestyle='-', color='blue', label='Weight (lbs)')
-    plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', label='BMI')
+    # Create the plot with formatting similar to the reference image
+    plt.figure(figsize=(8, 5))
+    plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
+    plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
 
-    plt.xlabel('Date')
-    plt.ylabel('Weight / BMI')
-    plt.title('Fitness Progress Over Time')
+    plt.xlabel('Date', fontsize=12, fontweight='bold')
+    plt.ylabel('Weight (lbs) / BMI', fontsize=12, fontweight='bold')
+    plt.title(f"{user.username}'s Fitness Progress", fontsize=14, fontweight='bold')
+
     plt.legend()
     plt.xticks(rotation=45)
-    plt.grid(True)
+    plt.grid(True, linestyle='--', linewidth=0.5)
     plt.tight_layout()
 
-    # Save plot as an image
+    # Convert plot to image
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
