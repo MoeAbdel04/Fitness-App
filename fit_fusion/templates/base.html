@@ -1,3 +1,4 @@
+<!-- templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,51 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit Fusion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            max-width: 900px;
-        }
-        .card {
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .btn-primary {
-            background-color: #ff6600;
-            border-color: #ff6600;
-        }
-        .btn-primary:hover {
-            background-color: #e65c00;
-            border-color: #e65c00;
-        }
-        .form-control {
-            border-radius: 8px;
-        }
-        h2, h3 {
-            font-weight: bold;
-            color: #333;
-        }
-        .navbar {
-            background-color: #343a40;
-        }
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .navbar-dark .navbar-nav .nav-link {
-            color: white;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 </head>
-<body>
+<body class="light-mode">
 
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
+            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">🏋️‍♂️ Fit Fusion</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -62,16 +27,45 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}">Register</a></li>
                     {% endif %}
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-outline-light ms-2">🌙</button>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    
+
+    <!-- FLASH MESSAGES -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} fade show" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- MAIN CONTENT -->
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
+    <!-- FOOTER -->
+    <footer class="text-center mt-5 py-3 bg-dark text-light">
+        <p class="mb-0">© 2025 Fit Fusion | Designed for fitness enthusiasts</p>
+    </footer>
+
+    <!-- BOOTSTRAP & DARK MODE TOGGLE SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+            this.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        });
+    </script>
 
 </body>
 </html>
