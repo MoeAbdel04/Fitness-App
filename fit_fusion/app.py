@@ -135,14 +135,21 @@ def workout_chart():
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
 
     if not workouts:
-        return "No workout data available"
+        flash('No workout data available to generate the graph.', 'warning')
+        return redirect(url_for('dashboard'))
 
+    # Get dates and weights where weight data exists
     dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
     weights = [workout.weight for workout in workouts if workout.weight]
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
 
+    if not dates:
+        flash('No valid weight data available to generate the graph.', 'warning')
+        return redirect(url_for('dashboard'))
+
+    # Create the plot
     plt.figure(figsize=(8, 4))
-    plt.plot(dates, weights, marker='o', linestyle='-', color='blue', label='Weight (kg)')
+    plt.plot(dates, weights, marker='o', linestyle='-', color='blue', label='Weight (lbs)')
     plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', label='BMI')
 
     plt.xlabel('Date')
@@ -150,14 +157,17 @@ def workout_chart():
     plt.title('Fitness Progress Over Time')
     plt.legend()
     plt.xticks(rotation=45)
+    plt.grid(True)
     plt.tight_layout()
 
+    # Save plot as an image
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
     plot_url = base64.b64encode(img.getvalue()).decode()
 
     return render_template('dashboard.html', plot_url=plot_url)
+
 
 @app.route('/log_workout', methods=['POST'])
 def log_workout():

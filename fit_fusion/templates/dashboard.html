@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mt-5">
     <h2>Welcome, {{ user.username }}</h2>
-    
+
     <p><strong>BMI:</strong> {{ bmi }}</p>
 
     <!-- Convert Height to Feet & Inches -->
@@ -22,7 +22,7 @@
     {% if plot_url %}
         <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid">
     {% else %}
-        <p>No fitness data available yet. Log your weight to track progress!</p>
+        <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
     {% endif %}
 
     <h3>Log a Workout</h3>
