@@ -3,8 +3,19 @@
 {% block content %}
 <div class="mt-5">
     <h2>Welcome, {{ user.username }}</h2>
+    
     <p><strong>BMI:</strong> {{ bmi }}</p>
-    <p><strong>Current Weight:</strong> {{ user.weight }} kg</p>
+
+    <!-- Convert Height to Feet & Inches -->
+    <p><strong>Height:</strong> 
+        {% set total_inches = (user.height * 39.37) | round %}
+        {% set feet = (total_inches // 12)|int %}
+        {% set inches = (total_inches % 12)|int %}
+        {{ feet }}' {{ inches }}" (Feet & Inches)
+    </p>
+
+    <!-- Convert Weight to Pounds -->
+    <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
     <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
 
     <h3>Fitness Progress</h3>
@@ -37,7 +48,7 @@
             <input type="number" name="reps" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Current Weight (kg)</label>
+            <label class="form-label">Current Weight (lbs)</label>
             <input type="number" step="0.1" name="weight" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary">Log Workout</button>
@@ -52,7 +63,7 @@
                 <th>Exercise</th>
                 <th>Sets</th>
                 <th>Reps</th>
-                <th>Weight (kg)</th>
+                <th>Weight (lbs)</th>
             </tr>
         </thead>
         <tbody>
@@ -63,7 +74,7 @@
                 <td>{{ workout.exercise }}</td>
                 <td>{{ workout.sets }}</td>
                 <td>{{ workout.reps }}</td>
-                <td>{{ workout.weight if workout.weight else '-' }}</td>
+                <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -18,8 +18,8 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     gender = db.Column(db.String(10), nullable=False)
-    height = db.Column(db.Float, nullable=False)
-    weight = db.Column(db.Float, nullable=False)
+    height = db.Column(db.Float, nullable=False)  # Stored in meters
+    weight = db.Column(db.Float, nullable=False)  # Stored in kg
     activity_level = db.Column(db.String(20), nullable=False)
     workout_preference = db.Column(db.String(20), nullable=True)
     goal = db.Column(db.String(50), nullable=True)
@@ -66,8 +66,16 @@ def register():
         password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
         age = int(request.form['age'])
         gender = request.form['gender']
-        height = float(request.form['height'])
-        weight = float(request.form['weight'])
+
+        # Convert feet/inches to meters
+        feet = int(request.form['feet'])
+        inches = int(request.form['inches'])
+        height = round(((feet * 12) + inches) * 0.0254, 2)  # Convert inches to meters
+
+        # Convert pounds to kilograms
+        weight_lbs = float(request.form['weight_lbs'])
+        weight = round(weight_lbs * 0.453592, 2)  # Convert lbs to kg
+
         activity_level = request.form['activity_level']
         workout_preference = request.form.get('workout_preference')
         
@@ -79,29 +87,6 @@ def register():
     
     return render_template('register.html')
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid credentials, please try again.', 'danger')
-    
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out.', 'info')
-    return redirect(url_for('home'))
-
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -109,7 +94,6 @@ def dashboard():
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
-
     bmi = calculate_bmi(user.weight, user.height)
     tdee = calculate_tdee(user)
     
@@ -123,26 +107,6 @@ def dashboard():
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.desc()).all()
 
     return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'), workouts=workouts)
-
-@app.route('/log_workout', methods=['POST'])
-def log_workout():
-    if 'user_id' not in session:
-        flash('Please log in to track workouts.', 'warning')
-        return redirect(url_for('login'))
-    
-    user_id = session['user_id']
-    workout_type = request.form['workout_type']
-    exercise = request.form['exercise']
-    sets = int(request.form['sets'])
-    reps = int(request.form['reps'])
-    weight = float(request.form['weight']) if 'weight' in request.form and request.form['weight'] else None
-
-    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps, weight=weight)
-    db.session.add(new_log)
-    db.session.commit()
-    
-    flash('Workout logged successfully!', 'success')
-    return redirect(url_for('dashboard'))
 
 @app.route('/workout_chart')
 def workout_chart():
@@ -177,6 +141,26 @@ def workout_chart():
     plot_url = base64.b64encode(img.getvalue()).decode()
 
     return render_template('dashboard.html', plot_url=plot_url)
+
+@app.route('/log_workout', methods=['POST'])
+def log_workout():
+    if 'user_id' not in session:
+        flash('Please log in to track workouts.', 'warning')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    workout_type = request.form['workout_type']
+    exercise = request.form['exercise']
+    sets = int(request.form['sets'])
+    reps = int(request.form['reps'])
+    weight = float(request.form['weight']) if 'weight' in request.form and request.form['weight'] else None
+
+    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps, weight=weight)
+    db.session.add(new_log)
+    db.session.commit()
+    
+    flash('Workout logged successfully!', 'success')
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
