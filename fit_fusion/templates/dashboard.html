@@ -6,78 +6,11 @@
     <p><strong>BMI:</strong> {{ bmi }}</p>
     <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
 
-    <h3>Log a Workout</h3>
-    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
-        <div class="mb-3">
-            <label class="form-label">Workout Type</label>
-            <select name="workout_type" class="form-control">
-                <option value="Cardio">Cardio</option>
-                <option value="Weight Training">Weight Training</option>
-                <option value="Strength Training">Strength Training</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Exercise</label>
-            <input type="text" name="exercise" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Sets</label>
-            <input type="number" name="sets" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Reps</label>
-            <input type="number" name="reps" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Log Workout</button>
-    </form>
-
-    <h3>Workout History</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Exercise</th>
-                <th>Sets</th>
-                <th>Reps</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for workout in user.workouts %}
-            <tr>
-                <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
-                <td>{{ workout.workout_type }}</td>
-                <td>{{ workout.exercise }}</td>
-                <td>{{ workout.sets }}</td>
-                <td>{{ workout.reps }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
     <h3>Workout Progress</h3>
-    <canvas id="workoutChart"></canvas>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var ctx = document.getElementById('workoutChart').getContext('2d');
-        var workoutChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [{% for workout in user.workouts %}"{{ workout.date.strftime('%Y-%m-%d') }}",{% endfor %}],
-                datasets: [{
-                    label: 'Workout Reps',
-                    data: [{% for workout in user.workouts %}{{ workout.reps }},{% endfor %}],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-    </script>
+    {% if plot_url %}
+        <img src="{{ plot_url }}" class="img-fluid">
+    {% else %}
+        <p>No workout data available.</p>
+    {% endif %}
 </div>
 {% endblock %}

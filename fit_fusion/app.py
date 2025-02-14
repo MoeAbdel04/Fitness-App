@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import matplotlib.pyplot as plt
+import io
+import base64
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -113,16 +116,8 @@ def dashboard():
         'medium_deficit': tdee - 500,
         'extreme_deficit': tdee - 750
     }
-    
-    workout_plans = {
-        'cardio': ['Running', 'Cycling', 'Jump Rope'],
-        'weight_training': ['Bench Press', 'Deadlifts', 'Squats'],
-        'strength_training': ['Pull-ups', 'Planks', 'Kettlebell Swings']
-    }
-    
-    selected_workout = workout_plans.get(user.workout_preference, [])
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, selected_workout=selected_workout)
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'))
 
 @app.route('/log_workout', methods=['POST'])
 def log_workout():
@@ -142,6 +137,37 @@ def log_workout():
     
     flash('Workout logged successfully!', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/workout_chart')
+def workout_chart():
+    if 'user_id' not in session:
+        flash('Please log in to view progress.', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    workouts = user.workouts
+
+    if not workouts:
+        return "No workout data available"
+
+    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts]
+    reps = [workout.reps for workout in workouts]
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(dates, reps, marker='o', linestyle='-', color='blue', label='Reps Progress')
+    plt.xlabel('Date')
+    plt.ylabel('Reps')
+    plt.title('Workout Progress Over Time')
+    plt.legend()
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+
+    return render_template('dashboard.html', plot_url=plot_url)
 
 if __name__ == '__main__':
     with app.app_context():
