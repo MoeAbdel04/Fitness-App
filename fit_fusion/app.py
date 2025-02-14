@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -18,6 +19,17 @@ class User(db.Model):
     weight = db.Column(db.Float, nullable=False)
     activity_level = db.Column(db.String(20), nullable=False)
     workout_preference = db.Column(db.String(20), nullable=True)
+
+class WorkoutLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    workout_type = db.Column(db.String(50), nullable=False)
+    exercise = db.Column(db.String(100), nullable=False)
+    sets = db.Column(db.Integer, nullable=False)
+    reps = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
 def calculate_bmi(weight, height):
     return round(weight / (height ** 2), 2)
@@ -109,8 +121,27 @@ def dashboard():
     }
     
     selected_workout = workout_plans.get(user.workout_preference, [])
-    
+
     return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, selected_workout=selected_workout)
+
+@app.route('/log_workout', methods=['POST'])
+def log_workout():
+    if 'user_id' not in session:
+        flash('Please log in to track workouts.', 'warning')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    workout_type = request.form['workout_type']
+    exercise = request.form['exercise']
+    sets = int(request.form['sets'])
+    reps = int(request.form['reps'])
+
+    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps)
+    db.session.add(new_log)
+    db.session.commit()
+    
+    flash('Workout logged successfully!', 'success')
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
