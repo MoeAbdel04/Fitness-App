@@ -22,7 +22,7 @@ class User(db.Model):
     weight = db.Column(db.Float, nullable=False)
     activity_level = db.Column(db.String(20), nullable=False)
     workout_preference = db.Column(db.String(20), nullable=True)
-    goal = db.Column(db.String(50), nullable=True)  # New field for workout goal
+    goal = db.Column(db.String(50), nullable=True)
 
 class WorkoutLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,6 +31,7 @@ class WorkoutLog(db.Model):
     exercise = db.Column(db.String(100), nullable=False)
     sets = db.Column(db.Integer, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
+    weight = db.Column(db.Float, nullable=True)  # Store weight changes
     date = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
@@ -53,31 +54,53 @@ def calculate_tdee(user):
     }
     return round(bmr * activity_factors.get(user.activity_level, 1.2))
 
-def generate_workout_plan(user):
-    """Generate a workout plan based on user goal"""
-    plans = {
-        "fat_loss": ["HIIT Workouts", "Treadmill Running", "Jump Rope", "Cycling"],
-        "muscle_gain": ["Bench Press", "Deadlifts", "Squats", "Overhead Press"],
-        "strength_training": ["Pull-ups", "Planks", "Kettlebell Swings", "Farmer's Walk"]
-    }
-    return plans.get(user.goal, ["General Fitness Routine"])
-
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/set_goal', methods=['POST'])
-def set_goal():
-    if 'user_id' not in session:
-        flash('Please log in to set your fitness goal.', 'warning')
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
+        age = int(request.form['age'])
+        gender = request.form['gender']
+        height = float(request.form['height'])
+        weight = float(request.form['weight'])
+        activity_level = request.form['activity_level']
+        workout_preference = request.form.get('workout_preference')
+        
+        new_user = User(username=username, email=email, password=password, age=age, gender=gender, height=height, weight=weight, activity_level=activity_level, workout_preference=workout_preference)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('login'))
-
-    user = User.query.get(session['user_id'])
-    user.goal = request.form['goal']
     
-    db.session.commit()
-    flash('Your goal has been updated!', 'success')
-    return redirect(url_for('dashboard'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        
+        if user and check_password_hash(user.password, password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid credentials, please try again.', 'danger')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
 
 @app.route('/dashboard')
 def dashboard():
@@ -86,6 +109,7 @@ def dashboard():
         return redirect(url_for('login'))
     
     user = User.query.get(session['user_id'])
+
     bmi = calculate_bmi(user.weight, user.height)
     tdee = calculate_tdee(user)
     
@@ -97,9 +121,62 @@ def dashboard():
     }
 
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.desc()).all()
-    workout_plan = generate_workout_plan(user)
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'), workouts=workouts, workout_plan=workout_plan)
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'), workouts=workouts)
+
+@app.route('/log_workout', methods=['POST'])
+def log_workout():
+    if 'user_id' not in session:
+        flash('Please log in to track workouts.', 'warning')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    workout_type = request.form['workout_type']
+    exercise = request.form['exercise']
+    sets = int(request.form['sets'])
+    reps = int(request.form['reps'])
+    weight = float(request.form['weight']) if 'weight' in request.form and request.form['weight'] else None
+
+    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise, sets=sets, reps=reps, weight=weight)
+    db.session.add(new_log)
+    db.session.commit()
+    
+    flash('Workout logged successfully!', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/workout_chart')
+def workout_chart():
+    if 'user_id' not in session:
+        flash('Please log in to view progress.', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+    workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
+
+    if not workouts:
+        return "No workout data available"
+
+    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
+    weights = [workout.weight for workout in workouts if workout.weight]
+    bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(dates, weights, marker='o', linestyle='-', color='blue', label='Weight (kg)')
+    plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', label='BMI')
+
+    plt.xlabel('Date')
+    plt.ylabel('Weight / BMI')
+    plt.title('Fitness Progress Over Time')
+    plt.legend()
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+
+    return render_template('dashboard.html', plot_url=plot_url)
 
 if __name__ == '__main__':
     with app.app_context():

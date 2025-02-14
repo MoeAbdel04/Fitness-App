@@ -4,17 +4,46 @@
 <div class="mt-5">
     <h2>Welcome, {{ user.username }}</h2>
     <p><strong>BMI:</strong> {{ bmi }}</p>
+    <p><strong>Current Weight:</strong> {{ user.weight }} kg</p>
     <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
 
-    <h3>Workout Progress</h3>
+    <h3>Fitness Progress</h3>
     {% if plot_url %}
-        <img src="{{ plot_url }}" class="img-fluid">
+        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid">
     {% else %}
-        <p>No workout data available.</p>
+        <p>No fitness data available yet. Log your weight to track progress!</p>
     {% endif %}
 
-    <h3 class="mt-4">Workout History</h3>
+    <h3>Log a Workout</h3>
+    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
+        <div class="mb-3">
+            <label class="form-label">Workout Type</label>
+            <select name="workout_type" class="form-control">
+                <option value="Cardio">Cardio</option>
+                <option value="Weight Training">Weight Training</option>
+                <option value="Strength Training">Strength Training</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Exercise</label>
+            <input type="text" name="exercise" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Sets</label>
+            <input type="number" name="sets" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Reps</label>
+            <input type="number" name="reps" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Current Weight (kg)</label>
+            <input type="number" step="0.1" name="weight" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Log Workout</button>
+    </form>
 
+    <h3 class="mt-4">Workout History</h3>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -23,7 +52,7 @@
                 <th>Exercise</th>
                 <th>Sets</th>
                 <th>Reps</th>
-                <th>Actions</th>
+                <th>Weight (kg)</th>
             </tr>
         </thead>
         <tbody>
@@ -34,46 +63,8 @@
                 <td>{{ workout.exercise }}</td>
                 <td>{{ workout.sets }}</td>
                 <td>{{ workout.reps }}</td>
-                <td>
-                    <!-- Edit Button -->
-                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editWorkout{{ workout.id }}">Edit</button>
-
-                    <!-- Delete Button -->
-                    <form method="POST" action="{{ url_for('delete_workout', workout_id=workout.id) }}" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
+                <td>{{ workout.weight if workout.weight else '-' }}</td>
             </tr>
-
-            <!-- Edit Workout Modal -->
-            <div class="modal fade" id="editWorkout{{ workout.id }}" tabindex="-1" aria-labelledby="editWorkoutLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Workout</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" action="{{ url_for('edit_workout', workout_id=workout.id) }}">
-                                <div class="mb-3">
-                                    <label class="form-label">Exercise</label>
-                                    <input type="text" name="exercise" class="form-control" value="{{ workout.exercise }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Sets</label>
-                                    <input type="number" name="sets" class="form-control" value="{{ workout.sets }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Reps</label>
-                                    <input type="number" name="reps" class="form-control" value="{{ workout.reps }}" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {% endfor %}
         </tbody>
     </table>
