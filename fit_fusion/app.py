@@ -149,7 +149,40 @@ def dashboard():
 
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, workouts=workouts)
+    # Extract weight data
+    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
+    weights = [workout.weight for workout in workouts if workout.weight]
+    bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
+
+    # Convert weights to lbs
+    weights_lbs = [round(weight * 2.20462, 2) for weight in weights]
+
+    # Generate graph even if no weight data
+    plt.figure(figsize=(8, 5))
+
+    if weights_lbs:
+        plt.plot(dates, weights_lbs, marker='o', linestyle='-', color='brown', label='Weight (lbs)')
+        plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', label='BMI')
+    else:
+        # Placeholder data if no weight logged
+        plt.plot([], [], marker='o', linestyle='-', color='brown', label='Weight (lbs)')
+        plt.plot([], [], marker='s', linestyle='--', color='red', label='BMI')
+
+    plt.xlabel('Date', fontsize=12)
+    plt.ylabel('Weight (lbs) / BMI', fontsize=12)
+    plt.title(f"{user.username}'s Fitness Progress", fontsize=14)
+    plt.legend()
+    plt.xticks(rotation=45)
+    plt.grid(True, linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=plot_url, workouts=workouts)
+
 
 # Log Workout Route
 @app.route('/log_workout', methods=['POST'])
