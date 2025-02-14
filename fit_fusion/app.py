@@ -113,7 +113,7 @@ def dashboard():
     user = User.query.get(session['user_id'])
     bmi = calculate_bmi(user.weight, user.height)
     tdee = calculate_tdee(user)
-    
+
     calorie_plans = {
         'maintenance': tdee,
         'light_deficit': tdee - 250,
@@ -121,9 +121,37 @@ def dashboard():
         'extreme_deficit': tdee - 750
     }
 
-    workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.desc()).all()
+    workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'), workouts=workouts)
+    # Extract data for the graph
+    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
+    weights = [workout.weight for workout in workouts if workout.weight]
+    bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
+
+    # Check if there's enough data to plot
+    if dates:
+        plt.figure(figsize=(8, 5))
+        plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
+        plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
+
+        plt.xlabel('Date', fontsize=12, fontweight='bold')
+        plt.ylabel('Weight (lbs) / BMI', fontsize=12, fontweight='bold')
+        plt.title(f"{user.username}'s Fitness Progress", fontsize=14, fontweight='bold')
+
+        plt.legend()
+        plt.xticks(rotation=45)
+        plt.grid(True, linestyle='--', linewidth=0.5)
+        plt.tight_layout()
+
+        # Save the plot to a BytesIO buffer
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plot_url = base64.b64encode(img.getvalue()).decode()
+    else:
+        plot_url = None  # No data to plot
+
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=plot_url, workouts=workouts)
 
 @app.route('/workout_chart')
 def workout_chart():
