@@ -19,11 +19,12 @@
     <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
 
     <h3>Fitness Progress</h3>
-    {% if plot_url %}
-        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid">
-    {% else %}
-        <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
-    {% endif %}
+{% if plot_url %}
+    <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid">
+{% else %}
+    <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
+{% endif %}
+
 
     <h3>Log a Workout</h3>
     <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
@@ -53,7 +54,7 @@
         </div>
         <button type="submit" class="btn btn-primary">Log Workout</button>
     </form>
-    
+
     <h3 class="mt-4">Workout History</h3>
     <table class="table table-striped">
         <thead>
