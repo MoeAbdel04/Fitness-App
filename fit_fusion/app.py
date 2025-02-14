@@ -18,6 +18,25 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = "your_secret_key"
 
+# AI Chatbot Route
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_message = request.json.get("message")
+
+    if not user_message:
+        return jsonify({"error": "No message received"}), 400
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Use GPT-4 or GPT-3.5-turbo
+            messages=[{"role": "user", "content": user_message}]
+        )
+        bot_reply = response['choices'][0]['message']['content']
+        return jsonify({"reply": bot_reply})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Initialize Database
 db = SQLAlchemy(app)
 
