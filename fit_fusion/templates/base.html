@@ -20,9 +20,9 @@
             margin-top: 20px;
         }
 
-        /* Navbar styling fix */
+        /* Navbar Styling */
         .navbar {
-            background: linear-gradient(to right, #007bff, #0056b3);
+            background-color: #343a40;
         }
 
         .navbar-brand, .navbar-nav .nav-link {
@@ -33,7 +33,7 @@
             border-color: white;
         }
 
-        /* Chatbox button styling */
+        /* Chatbox Button Styling */
         .chat-button {
             position: fixed;
             bottom: 20px;
@@ -51,7 +51,7 @@
             background-color: #0056b3;
         }
 
-        /* Chat popup */
+        /* Chat Popup */
         #chatPopup {
             display: none;
             position: fixed;
@@ -86,7 +86,7 @@
 <body>
 
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
