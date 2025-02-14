@@ -12,5 +12,57 @@
     {% else %}
         <p>No workout data available.</p>
     {% endif %}
+
+    <h3 class="mt-4">Workout History</h3>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('dashboard') }}" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Start Date:</label>
+                <input type="date" name="start_date" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">End Date:</label>
+                <input type="date" name="end_date" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label for="sort_by" class="form-label">Sort By:</label>
+                <select name="sort_by" class="form-select">
+                    <option value="date_desc">Date (Newest First)</option>
+                    <option value="date_asc">Date (Oldest First)</option>
+                    <option value="reps_desc">Reps (Highest First)</option>
+                    <option value="reps_asc">Reps (Lowest First)</option>
+                    <option value="exercise_asc">Exercise (A-Z)</option>
+                    <option value="exercise_desc">Exercise (Z-A)</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Apply Filters</button>
+    </form>
+
+    <!-- Workout Table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Workout Type</th>
+                <th>Exercise</th>
+                <th>Sets</th>
+                <th>Reps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for workout in workouts %}
+            <tr>
+                <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ workout.workout_type }}</td>
+                <td>{{ workout.exercise }}</td>
+                <td>{{ workout.sets }}</td>
+                <td>{{ workout.reps }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

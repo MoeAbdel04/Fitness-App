@@ -48,7 +48,7 @@ def calculate_tdee(user):
         'light': 1.375,
         'moderate': 1.55,
         'active': 1.725,
-        'very active': 1.9
+        'very_active': 1.9
     }
     return round(bmr * activity_factors.get(user.activity_level, 1.2))
 
@@ -117,7 +117,35 @@ def dashboard():
         'extreme_deficit': tdee - 750
     }
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'))
+    # Filtering Workouts
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    sort_by = request.args.get('sort_by', 'date_desc')
+
+    workouts = WorkoutLog.query.filter_by(user_id=user.id)
+
+    if start_date:
+        workouts = workouts.filter(WorkoutLog.date >= start_date)
+    if end_date:
+        workouts = workouts.filter(WorkoutLog.date <= end_date)
+
+    # Sorting
+    if sort_by == 'date_asc':
+        workouts = workouts.order_by(WorkoutLog.date.asc())
+    elif sort_by == 'date_desc':
+        workouts = workouts.order_by(WorkoutLog.date.desc())
+    elif sort_by == 'reps_asc':
+        workouts = workouts.order_by(WorkoutLog.reps.asc())
+    elif sort_by == 'reps_desc':
+        workouts = workouts.order_by(WorkoutLog.reps.desc())
+    elif sort_by == 'exercise_asc':
+        workouts = workouts.order_by(WorkoutLog.exercise.asc())
+    elif sort_by == 'exercise_desc':
+        workouts = workouts.order_by(WorkoutLog.exercise.desc())
+
+    workouts = workouts.all()
+
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=url_for('workout_chart'), workouts=workouts)
 
 @app.route('/log_workout', methods=['POST'])
 def log_workout():
