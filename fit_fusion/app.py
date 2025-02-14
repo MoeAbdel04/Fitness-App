@@ -16,9 +16,26 @@ class User(db.Model):
     gender = db.Column(db.String(10), nullable=False)
     height = db.Column(db.Float, nullable=False)
     weight = db.Column(db.Float, nullable=False)
+    activity_level = db.Column(db.String(20), nullable=False)
+    workout_preference = db.Column(db.String(20), nullable=True)
 
 def calculate_bmi(weight, height):
     return round(weight / (height ** 2), 2)
+
+def calculate_tdee(user):
+    if user.gender.lower() == 'male':
+        bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) + 5
+    else:
+        bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) - 161
+    
+    activity_factors = {
+        'sedentary': 1.2,
+        'light': 1.375,
+        'moderate': 1.55,
+        'active': 1.725,
+        'very active': 1.9
+    }
+    return round(bmr * activity_factors.get(user.activity_level, 1.2))
 
 @app.route('/')
 def home():
@@ -30,12 +47,14 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
-        age = request.form['age']
+        age = int(request.form['age'])
         gender = request.form['gender']
         height = float(request.form['height'])
         weight = float(request.form['weight'])
+        activity_level = request.form['activity_level']
+        workout_preference = request.form.get('workout_preference')
         
-        new_user = User(username=username, email=email, password=password, age=age, gender=gender, height=height, weight=weight)
+        new_user = User(username=username, email=email, password=password, age=age, gender=gender, height=height, weight=weight, activity_level=activity_level, workout_preference=workout_preference)
         db.session.add(new_user)
         db.session.commit()
         flash('Account created successfully! Please log in.', 'success')
@@ -74,7 +93,24 @@ def dashboard():
     
     user = User.query.get(session['user_id'])
     bmi = calculate_bmi(user.weight, user.height)
-    return render_template('dashboard.html', user=user, bmi=bmi)
+    tdee = calculate_tdee(user)
+    
+    calorie_plans = {
+        'maintenance': tdee,
+        'light_deficit': tdee - 250,
+        'medium_deficit': tdee - 500,
+        'extreme_deficit': tdee - 750
+    }
+    
+    workout_plans = {
+        'cardio': ['Running', 'Cycling', 'Jump Rope'],
+        'weight_training': ['Bench Press', 'Deadlifts', 'Squats'],
+        'strength_training': ['Pull-ups', 'Planks', 'Kettlebell Swings']
+    }
+    
+    selected_workout = workout_plans.get(user.workout_preference, [])
+    
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, selected_workout=selected_workout)
 
 if __name__ == '__main__':
     with app.app_context():
