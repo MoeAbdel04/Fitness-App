@@ -4,86 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fit Fusion</title>
-    
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Custom Styles -->
     <style>
-        /* 🔹 Fix Navbar & Add Effects */
-        .navbar {
-            background-color: #343a40 !important; /* Dark navbar */
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Shadow */
-            transition: all 0.3s ease-in-out;
-        }
-        .navbar a, .navbar-brand, .nav-link {
-            color: white !important;
-            font-weight: 500;
-            transition: all 0.3s ease-in-out;
-        }
-        .navbar a:hover, .nav-link:hover {
-            color: #ffc107 !important; /* Yellow hover */
-            transform: scale(1.05);
-        }
-
-        /* 🔹 Improve Layout & Effects */
         body {
-            background-color: #f8f9fa; /* Light background */
+            background-color: #f8f9fa;
             font-family: 'Arial', sans-serif;
         }
         .container {
             max-width: 900px;
-            margin-top: 30px;
         }
         .card {
-            background: white;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            transition: all 0.3s ease-in-out;
         }
-        .card:hover {
-            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
-            transform: scale(1.02);
+        .btn-primary {
+            background-color: #ff6600;
+            border-color: #ff6600;
         }
-
-        /* 🔹 AI Chatbox Styles */
-        #chatbox {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #007bff;
-            color: white;
-            border-radius: 50px;
-            padding: 15px 20px;
-            font-size: 16px;
+        .btn-primary:hover {
+            background-color: #e65c00;
+            border-color: #e65c00;
+        }
+        .form-control {
+            border-radius: 8px;
+        }
+        h2, h3 {
             font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+            color: #333;
         }
-        #chatbox:hover {
-            background: #0056b3;
-            transform: scale(1.1);
+        .navbar {
+            background-color: #343a40;
         }
-
-        /* 🔹 AI Chatbox Popup */
-        #chat-container {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 300px;
-            height: 400px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
-            display: none; /* Initially hidden */
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .navbar-dark .navbar-nav .nav-link {
+            color: white;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <!-- 🔹 Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('home') }}">Fit Fusion</a>
@@ -92,8 +55,8 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                     {% if 'user_id' in session %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
@@ -103,33 +66,12 @@
             </div>
         </div>
     </nav>
-
-    <!-- 🔹 Page Content -->
-    <div class="container">
+    
+    <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- 🔹 AI Chatbox Button -->
-    <div id="chatbox" onclick="toggleChat()">💬 Chat with AI</div>
-
-    <!-- 🔹 AI Chatbox Container -->
-    <div id="chat-container">
-        <iframe src="{{ url_for('chat_ai') }}" width="100%" height="100%" style="border: none;"></iframe>
-    </div>
-
-    <!-- 🔹 JavaScript -->
-    <script>
-        function toggleChat() {
-            var chatContainer = document.getElementById("chat-container");
-            if (chatContainer.style.display === "none") {
-                chatContainer.style.display = "block";
-            } else {
-                chatContainer.style.display = "none";
-            }
-        }
-    </script>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
