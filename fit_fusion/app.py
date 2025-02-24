@@ -288,8 +288,8 @@ def chat_api():
         return jsonify({"error": "Unauthorized"}), 401
 
     user_message = request.json.get('message', '')
-    # Placeholder AI logic; replace with your actual AI processing
-    ai_response = f"AI Echo: {user_message}"
+    # Placeholder AI logic with Fit Bot as the bot name
+    ai_response = f"Fit Bot: You said, {user_message}"
     return jsonify({"response": ai_response})
 
 if __name__ == '__main__':

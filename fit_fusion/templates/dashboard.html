@@ -93,7 +93,7 @@
     </div>
 </div>
 
-<!-- ===================== AI Chatbox Start ===================== -->
+<!-- ===================== Fit Bot Chatbox Start ===================== -->
 <style>
 /* Chatbox styling */
 #chat-icon {
@@ -201,7 +201,7 @@
 <!-- Chat Window -->
 <div id="chat-window">
     <div id="chat-header">
-        <span>AI Chat</span>
+        <span>Fit Bot</span>
         <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
             &times;
         </button>
@@ -248,7 +248,7 @@ async function sendMessage() {
             addMessage(`Error: ${data.error}`, 'ai-message');
         }
     } catch (err) {
-        addMessage('Error connecting to AI.', 'ai-message');
+        addMessage('Error connecting to Fit Bot.', 'ai-message');
     }
 }
 
@@ -261,6 +261,6 @@ function addMessage(text, cssClass) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 </script>
-<!-- ===================== AI Chatbox End ===================== -->
+<!-- ===================== Fit Bot Chatbox End ===================== -->
 
 {% endblock %}
