@@ -38,7 +38,12 @@ Fit Fusion is a personal fitness tracker web application built with Flask. It he
 
 ## Installation and Setup
 
-1. **Clone the Repository:**
+1. source venv/bin/activate 
+    python app.py
+
+
+
+2. **Clone the Repository:**
    ```bash
    git clone <repository-url>
    cd fit-fusion
