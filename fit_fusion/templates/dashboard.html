@@ -92,4 +92,171 @@
         </table>
     </div>
 </div>
+
+<!-- ===================== AI Chatbox Start ===================== -->
+<style>
+/* Positioning and styling for the floating chat button and window */
+#chat-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff6600;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 24px;
+}
+
+#chat-window {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    z-index: 1000;
+}
+
+#chat-header {
+    background-color: #ff6600;
+    color: #fff;
+    padding: 10px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.chat-bubble {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.user-message {
+    background-color: #e6e6e6;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai-message {
+    background-color: #f0fff0;
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+#chat-input {
+    display: flex;
+    padding: 8px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+#chat-input input {
+    flex: 1;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    outline: none;
+}
+
+#chat-input button {
+    background-color: #ff6600;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    margin-left: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+</style>
+
+<!-- Floating Chat Icon -->
+<button id="chat-icon">
+    <i class="bi bi-chat-left-text-fill"></i>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-window" class="d-flex">
+    <div id="chat-header">
+        <span>AI Chat</span>
+        <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
+            &times;
+        </button>
+    </div>
+    <div id="chat-messages" class="d-flex flex-column"></div>
+    <div id="chat-input">
+        <input type="text" id="userMessage" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+function toggleChat() {
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.style.display = (chatWindow.style.display === 'flex') ? 'none' : 'flex';
+}
+
+document.getElementById('chat-icon').addEventListener('click', toggleChat);
+
+async function sendMessage() {
+    const userMessageInput = document.getElementById('userMessage');
+    const userMessage = userMessageInput.value.trim();
+    if (!userMessage) return;
+
+    // Display user message in chat
+    addMessage(userMessage, 'user-message');
+
+    // Clear input
+    userMessageInput.value = '';
+
+    try {
+        const response = await fetch('{{ url_for("chat_api") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: userMessage })
+        });
+        const data = await response.json();
+
+        if (data.response) {
+            addMessage(data.response, 'ai-message');
+        } else if (data.error) {
+            addMessage(`Error: ${data.error}`, 'ai-message');
+        }
+    } catch (err) {
+        addMessage('Error connecting to AI.', 'ai-message');
+    }
+}
+
+function addMessage(text, cssClass) {
+    const chatMessages = document.getElementById('chat-messages');
+    const bubble = document.createElement('div');
+    bubble.classList.add('chat-bubble', cssClass);
+    bubble.textContent = text;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+</script>
+<!-- ===================== AI Chatbox End ===================== -->
+
 {% endblock %}

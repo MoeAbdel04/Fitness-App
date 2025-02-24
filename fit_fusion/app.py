@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -79,11 +79,11 @@ def register():
         # Convert feet/inches to meters
         feet = int(request.form['feet'])
         inches = int(request.form['inches'])
-        height = round(((feet * 12) + inches) * 0.0254, 2)  # Convert inches to meters
+        height = round(((feet * 12) + inches) * 0.0254, 2)
 
         # Convert pounds to kilograms
         weight_lbs = float(request.form['weight_lbs'])
-        weight = round(weight_lbs * 0.453592, 2)  # Convert lbs to kg
+        weight = round(weight_lbs * 0.453592, 2)
 
         activity_level = request.form['activity_level']
         workout_preference = request.form.get('workout_preference')
@@ -113,7 +113,6 @@ def login():
     
     return render_template('login.html')
 
-
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -138,7 +137,6 @@ def dashboard():
     weights = [workout.weight for workout in workouts if workout.weight]
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
 
-    # Check if there's enough data to plot
     if dates:
         plt.figure(figsize=(8, 5))
         plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
@@ -153,15 +151,13 @@ def dashboard():
         plt.grid(True, linestyle='--', linewidth=0.5)
         plt.tight_layout()
 
-        # Save the plot to a BytesIO buffer
         img = io.BytesIO()
         plt.savefig(img, format='png')
         img.seek(0)
         plot_url = base64.b64encode(img.getvalue()).decode()
     else:
-        plot_url = None  # No data to plot
+        plot_url = None
 
-    # Determine a recommended workout based on user preference
     if user.workout_preference:
         pref = user.workout_preference.lower()
         if 'cardio' in pref:
@@ -186,7 +182,6 @@ def workout_chart():
     user = User.query.get(session['user_id'])
     workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
 
-    # Get valid data points
     dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
     weights = [workout.weight for workout in workouts if workout.weight]
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
@@ -195,7 +190,6 @@ def workout_chart():
         flash('No valid weight data available to generate the graph.', 'warning')
         return redirect(url_for('dashboard'))
 
-    # Create the plot with formatting similar to the reference image
     plt.figure(figsize=(8, 5))
     plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
     plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
@@ -209,7 +203,6 @@ def workout_chart():
     plt.grid(True, linestyle='--', linewidth=0.5)
     plt.tight_layout()
 
-    # Convert plot to image
     img = io.BytesIO()
     plt.savefig(img, format='png')
     img.seek(0)
@@ -229,7 +222,6 @@ def log_workout():
     sets = int(request.form['sets'])
     reps = int(request.form['reps'])
     
-    # Convert weight from lbs → kg before storing
     weight_lbs = request.form.get('weight')
     weight_kg = round(float(weight_lbs) / 2.20462, 2) if weight_lbs else None
 
@@ -253,11 +245,9 @@ def profile():
         email = request.form['email']
         age = int(request.form['age'])
         gender = request.form['gender']
-        # Convert feet/inches to meters
         feet = int(request.form['feet'])
         inches = int(request.form['inches'])
         height = round(((feet * 12) + inches) * 0.0254, 2)
-        # Convert weight from lbs to kg
         weight_lbs = float(request.form['weight_lbs'])
         weight = round(weight_lbs * 0.453592, 2)
         activity_level = request.form['activity_level']
@@ -278,7 +268,6 @@ def profile():
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))
 
-    # Pre-fill form with current user details
     total_inches = round(user.height / 0.0254)
     feet = total_inches // 12
     inches = total_inches % 12
@@ -291,6 +280,17 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
+
+# New route for AI Chatbox
+@app.route('/chat_api', methods=['POST'])
+def chat_api():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_message = request.json.get('message', '')
+    # Placeholder AI logic; replace with your actual AI processing
+    ai_response = f"AI Echo: {user_message}"
+    return jsonify({"response": ai_response})
 
 if __name__ == '__main__':
     with app.app_context():
