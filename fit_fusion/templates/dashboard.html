@@ -23,6 +23,9 @@
             {% endif %}
         </div>
 
+        <h3 class="mt-4">Recommended Workout</h3>
+        <p>{{ recommended_workout }}</p>
+
         <h3 class="mt-4">Log a Workout</h3>
         <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
             <div class="mb-3">

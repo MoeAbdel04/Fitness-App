@@ -86,6 +86,7 @@ def register():
         return redirect(url_for('login'))
     
     return render_template('register.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -102,7 +103,6 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     
     return render_template('login.html')
-
 
 @app.route('/dashboard')
 def dashboard():
@@ -151,7 +151,21 @@ def dashboard():
     else:
         plot_url = None  # No data to plot
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=plot_url, workouts=workouts)
+    # Determine a recommended workout based on user preference
+    if user.workout_preference:
+        pref = user.workout_preference.lower()
+        if 'cardio' in pref:
+            recommended_workout = "Try a 30-minute run or cycling session."
+        elif 'weight' in pref:
+            recommended_workout = "Consider a full-body strength training routine."
+        elif 'strength' in pref:
+            recommended_workout = "Focus on compound lifts like squats, deadlifts, and bench press."
+        else:
+            recommended_workout = "Keep up the great work with your fitness routine!"
+    else:
+        recommended_workout = "Keep up the great work with your fitness routine!"
+
+    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans, plot_url=plot_url, workouts=workouts, recommended_workout=recommended_workout)
 
 @app.route('/workout_chart')
 def workout_chart():
@@ -193,7 +207,6 @@ def workout_chart():
 
     return render_template('dashboard.html', plot_url=plot_url)
 
-
 @app.route('/log_workout', methods=['POST'])
 def log_workout():
     if 'user_id' not in session:
@@ -216,6 +229,52 @@ def log_workout():
     
     flash('Workout logged successfully!', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user_id' not in session:
+        flash('Please log in to view profile.', 'warning')
+        return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        age = int(request.form['age'])
+        gender = request.form['gender']
+        # Convert feet/inches to meters
+        feet = int(request.form['feet'])
+        inches = int(request.form['inches'])
+        height = round(((feet * 12) + inches) * 0.0254, 2)
+        # Convert weight from lbs to kg
+        weight_lbs = float(request.form['weight_lbs'])
+        weight = round(weight_lbs * 0.453592, 2)
+        activity_level = request.form['activity_level']
+        workout_preference = request.form.get('workout_preference')
+        goal = request.form.get('goal')
+
+        user.username = username
+        user.email = email
+        user.age = age
+        user.gender = gender
+        user.height = height
+        user.weight = weight
+        user.activity_level = activity_level
+        user.workout_preference = workout_preference
+        user.goal = goal
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('profile'))
+
+    # Pre-fill form with current user details
+    total_inches = round(user.height / 0.0254)
+    feet = total_inches // 12
+    inches = total_inches % 12
+    weight_lbs = round(user.weight * 2.20462, 1)
+
+    return render_template('profile.html', user=user, feet=feet, inches=inches, weight_lbs=weight_lbs)
 
 @app.route('/logout')
 def logout():
