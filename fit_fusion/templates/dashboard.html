@@ -95,7 +95,7 @@
 
 <!-- ===================== AI Chatbox Start ===================== -->
 <style>
-/* Positioning and styling for the floating chat button and window */
+/* Chatbox styling */
 #chat-icon {
     position: fixed;
     bottom: 20px;
@@ -110,6 +110,7 @@
     font-size: 24px;
 }
 
+/* The chat window is hidden by default; .chat-open class makes it visible */
 #chat-window {
     position: fixed;
     bottom: 80px;
@@ -119,9 +120,12 @@
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    display: none; /* Hidden by default */
+    display: none;
     flex-direction: column;
     z-index: 1000;
+}
+#chat-window.chat-open {
+    display: flex;
 }
 
 #chat-header {
@@ -195,7 +199,7 @@
 </button>
 
 <!-- Chat Window -->
-<div id="chat-window" class="d-flex">
+<div id="chat-window">
     <div id="chat-header">
         <span>AI Chat</span>
         <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
@@ -210,9 +214,9 @@
 </div>
 
 <script>
+// Toggle the chat window by adding or removing the 'chat-open' class
 function toggleChat() {
-    const chatWindow = document.getElementById('chat-window');
-    chatWindow.style.display = (chatWindow.style.display === 'flex') ? 'none' : 'flex';
+    document.getElementById('chat-window').classList.toggle('chat-open');
 }
 
 document.getElementById('chat-icon').addEventListener('click', toggleChat);
