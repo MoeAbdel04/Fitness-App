@@ -54,6 +54,15 @@ def calculate_tdee(user):
     }
     return round(bmr * activity_factors.get(user.activity_level, 1.2))
 
+def height_to_feet_inches(meters):
+    total_inches = round(meters / 0.0254)
+    feet = total_inches // 12
+    inches = total_inches % 12
+    return f"{feet}' {inches}\""
+
+# Register the custom filter
+app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -103,6 +112,7 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     
     return render_template('login.html')
+
 
 @app.route('/dashboard')
 def dashboard():

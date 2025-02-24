@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-md-6">
                 <p><strong>BMI:</strong> {{ bmi }}</p>
-                <p><strong>Height:</strong> {{ user.height | round(1) }} meters</p>
+                <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
                 <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
                 <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
             </div>
