@@ -2,7 +2,9 @@
 {% block content %}
 <div class="container mt-5">
     <div class="card p-4">
-        <h2 class="text-center">Profile</h2>
+        <h2 class="text-center">
+            <i class="bi bi-person-lines-fill"></i> Profile
+        </h2>
         <form method="POST" action="{{ url_for('profile') }}" class="mt-3">
             <div class="mb-3">
                 <label class="form-label">Username</label>
@@ -60,7 +62,9 @@
                 <label class="form-label">Fitness Goal</label>
                 <input type="text" name="goal" class="form-control" value="{{ user.goal }}">
             </div>
-            <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-save"></i> Update Profile
+            </button>
         </form>
     </div>
 </div>

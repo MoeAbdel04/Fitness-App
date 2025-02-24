@@ -3,7 +3,9 @@
 {% block content %}
 <div class="container mt-4">
     <div class="card p-4">
-        <h2 class="mb-3 text-center">Welcome, {{ user.username }}</h2>
+        <h2 class="mb-3 text-center">
+            <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
+        </h2>
 
         <div class="row">
             <div class="col-md-6">
@@ -14,7 +16,9 @@
             </div>
         </div>
 
-        <h3 class="mt-4">Fitness Progress</h3>
+        <h3 class="mt-4">
+            <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
+        </h3>
         <div class="chart-container">
             {% if plot_url %}
                 <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow">
@@ -23,10 +27,14 @@
             {% endif %}
         </div>
 
-        <h3 class="mt-4">Recommended Workout</h3>
+        <h3 class="mt-4">
+            <i class="bi bi-lightning-fill"></i> Recommended Workout
+        </h3>
         <p>{{ recommended_workout }}</p>
 
-        <h3 class="mt-4">Log a Workout</h3>
+        <h3 class="mt-4">
+            <i class="bi bi-pencil-square"></i> Log a Workout
+        </h3>
         <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
             <div class="mb-3">
                 <label class="form-label">Workout Type</label>
@@ -55,7 +63,9 @@
             <button type="submit" class="btn btn-primary w-100">Log Workout</button>
         </form>
 
-        <h3 class="mt-4">Workout History</h3>
+        <h3 class="mt-4">
+            <i class="bi bi-clock-history"></i> Workout History
+        </h3>
         <table class="table table-bordered table-hover">
             <thead class="table-dark">
                 <tr>
