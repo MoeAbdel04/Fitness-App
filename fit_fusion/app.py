@@ -296,7 +296,7 @@ def chat_api():
 
     user_message = request.json.get('message', '')
     try:
-        response = openai.Chat.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -313,6 +313,7 @@ def chat_api():
         return jsonify({"response": f"Fit Bot: {ai_response}"})
     except Exception as e:
         return jsonify({"error": str(e)})
+
 
 if __name__ == '__main__':
     with app.app_context():
