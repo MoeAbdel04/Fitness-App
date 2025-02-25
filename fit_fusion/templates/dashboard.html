@@ -147,6 +147,11 @@
       font-size: 16px;
   }
 
+  /* Adding the Fit Bot Icon in the header */
+  #chat-header span i {
+      margin-right: 8px;
+  }
+
   #chat-messages {
       flex: 1;
       padding: 10px;
@@ -225,7 +230,7 @@
 <!-- Chat Window -->
 <div id="chat-window">
   <div id="chat-header">
-      <span>Fit Bot</span>
+      <span><i class="bi bi-robot"></i> Fit Bot</span>
       <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
           &times;
       </button>
