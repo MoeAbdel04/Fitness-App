@@ -2,265 +2,291 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="card p-4">
-        <h2 class="mb-3 text-center">
-            <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
-        </h2>
+  <div class="card p-4">
+    <h2 class="mb-3 text-center">
+      <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
+    </h2>
 
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>BMI:</strong> {{ bmi }}</p>
-                <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
-                <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
-                <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
-            </div>
-        </div>
-
-        <h3 class="mt-4">
-            <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
-        </h3>
-        <div class="chart-container">
-            {% if plot_url %}
-                <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow">
-            {% else %}
-                <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
-            {% endif %}
-        </div>
-
-        <h3 class="mt-4">
-            <i class="bi bi-lightning-fill"></i> Recommended Workout
-        </h3>
-        <p>{{ recommended_workout }}</p>
-
-        <h3 class="mt-4">
-            <i class="bi bi-pencil-square"></i> Log a Workout
-        </h3>
-        <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
-            <div class="mb-3">
-                <label class="form-label">Workout Type</label>
-                <select name="workout_type" class="form-control">
-                    <option value="Cardio">Cardio</option>
-                    <option value="Weight Training">Weight Training</option>
-                    <option value="Strength Training">Strength Training</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Exercise</label>
-                <input type="text" name="exercise" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Sets</label>
-                <input type="number" name="sets" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Reps</label>
-                <input type="number" name="reps" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Current Weight (lbs)</label>
-                <input type="number" step="0.1" name="weight" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Log Workout</button>
-        </form>
-
-        <h3 class="mt-4">
-            <i class="bi bi-clock-history"></i> Workout History
-        </h3>
-        <table class="table table-bordered table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Date</th>
-                    <th>Workout Type</th>
-                    <th>Exercise</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    <th>Weight (lbs)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for workout in workouts %}
-                <tr>
-                    <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ workout.workout_type }}</td>
-                    <td>{{ workout.exercise }}</td>
-                    <td>{{ workout.sets }}</td>
-                    <td>{{ workout.reps }}</td>
-                    <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>BMI:</strong> {{ bmi }}</p>
+        <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
+        <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
+        <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
+      </div>
     </div>
+
+    <h3 class="mt-4">
+      <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
+    </h3>
+    <div class="chart-container">
+      {% if plot_url %}
+      <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow">
+      {% else %}
+      <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
+      {% endif %}
+    </div>
+
+    <h3 class="mt-4">
+      <i class="bi bi-lightning-fill"></i> Recommended Workout
+    </h3>
+    <p>{{ recommended_workout }}</p>
+
+    <h3 class="mt-4">
+      <i class="bi bi-pencil-square"></i> Log a Workout
+    </h3>
+    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
+      <div class="mb-3">
+        <label class="form-label">Workout Type</label>
+        <select name="workout_type" class="form-control">
+          <option value="Cardio">Cardio</option>
+          <option value="Weight Training">Weight Training</option>
+          <option value="Strength Training">Strength Training</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Exercise</label>
+        <input type="text" name="exercise" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Sets</label>
+        <input type="number" name="sets" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Reps</label>
+        <input type="number" name="reps" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Current Weight (lbs)</label>
+        <input type="number" step="0.1" name="weight" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Log Workout</button>
+    </form>
+
+    <h3 class="mt-4">
+      <i class="bi bi-clock-history"></i> Workout History
+    </h3>
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Date</th>
+          <th>Workout Type</th>
+          <th>Exercise</th>
+          <th>Sets</th>
+          <th>Reps</th>
+          <th>Weight (lbs)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for workout in workouts %}
+        <tr>
+          <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ workout.workout_type }}</td>
+          <td>{{ workout.exercise }}</td>
+          <td>{{ workout.sets }}</td>
+          <td>{{ workout.reps }}</td>
+          <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<!-- ===================== Fit Bot Chatbox Start ===================== -->
+<!-- ===================== Enhanced Fit Bot Chatbox Start ===================== -->
 <style>
-/* Chatbox styling */
-#chat-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #ff6600;
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    padding: 15px;
-    cursor: pointer;
-    z-index: 1000;
-    font-size: 24px;
-}
+  /* Enhanced Chatbox Styling */
+  #chat-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff6600;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      padding: 15px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
 
-/* The chat window is hidden by default; .chat-open class makes it visible */
-#chat-window {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 300px;
-    max-height: 400px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-}
-#chat-window.chat-open {
-    display: flex;
-}
+  #chat-window {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 320px;
+      max-height: 500px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      overflow: hidden;
+  }
+  #chat-window.chat-open {
+      display: flex;
+      animation: fadeIn 0.3s ease-in-out;
+  }
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
 
-#chat-header {
-    background-color: #ff6600;
-    color: #fff;
-    padding: 10px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+  #chat-header {
+      background-color: #ff6600;
+      color: #fff;
+      padding: 12px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+  }
 
-#chat-messages {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    font-size: 0.9rem;
-}
+  #chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      background: #f5f5f5;
+  }
 
-.chat-bubble {
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    max-width: 80%;
-}
+  .chat-bubble {
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 15px;
+      max-width: 80%;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+      from { transform: translateX(10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+  }
+  .user-message {
+      background-color: #e0e0e0;
+      align-self: flex-end;
+      margin-left: auto;
+      border-bottom-right-radius: 0;
+  }
+  .ai-message {
+      background-color: #dff0d8;
+      align-self: flex-start;
+      margin-right: auto;
+      border-bottom-left-radius: 0;
+  }
 
-.user-message {
-    background-color: #e6e6e6;
-    align-self: flex-end;
-    margin-left: auto;
-}
+  #chat-input {
+      display: flex;
+      padding: 10px;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      background-color: #f8f9fa;
+      align-items: center;
+  }
+  #chat-input input {
+      flex: 1;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      outline: none;
+  }
+  #chat-input button {
+      background-color: #ff6600;
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      margin-left: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+  }
+  #chat-input button:hover {
+      background-color: #e65c00;
+  }
 
-.ai-message {
-    background-color: #f0fff0;
-    align-self: flex-start;
-    margin-right: auto;
-}
-
-#chat-input {
-    display: flex;
-    padding: 8px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-    background-color: #f8f9fa;
-}
-
-#chat-input input {
-    flex: 1;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    padding: 6px 12px;
-    outline: none;
-}
-
-#chat-input button {
-    background-color: #ff6600;
-    border: none;
-    border-radius: 20px;
-    color: #fff;
-    margin-left: 8px;
-    padding: 6px 12px;
-    cursor: pointer;
-}
+  /* Typing Indicator */
+  #typing-indicator {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 5px;
+  }
 </style>
 
 <!-- Floating Chat Icon -->
 <button id="chat-icon">
-    <i class="bi bi-chat-left-text-fill"></i>
+  <i class="bi bi-chat-left-text-fill"></i>
 </button>
 
 <!-- Chat Window -->
 <div id="chat-window">
-    <div id="chat-header">
-        <span>Fit Bot</span>
-        <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
-            &times;
-        </button>
-    </div>
-    <div id="chat-messages" class="d-flex flex-column"></div>
-    <div id="chat-input">
-        <input type="text" id="userMessage" placeholder="Type a message..." />
-        <button onclick="sendMessage()">Send</button>
-    </div>
+  <div id="chat-header">
+      <span>Fit Bot</span>
+      <button style="background: none; border: none; color: #fff; font-size: 18px;" onclick="toggleChat()">
+          &times;
+      </button>
+  </div>
+  <div id="chat-messages" class="d-flex flex-column"></div>
+  <div id="chat-input">
+      <input type="text" id="userMessage" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+  </div>
 </div>
 
 <script>
-// Toggle the chat window by adding or removing the 'chat-open' class
-function toggleChat() {
-    document.getElementById('chat-window').classList.toggle('chat-open');
-}
+  // Toggle the chat window visibility
+  function toggleChat() {
+      document.getElementById('chat-window').classList.toggle('chat-open');
+  }
+  document.getElementById('chat-icon').addEventListener('click', toggleChat);
 
-document.getElementById('chat-icon').addEventListener('click', toggleChat);
+  async function sendMessage() {
+      const userMessageInput = document.getElementById('userMessage');
+      const userMessage = userMessageInput.value.trim();
+      if (!userMessage) return;
 
-async function sendMessage() {
-    const userMessageInput = document.getElementById('userMessage');
-    const userMessage = userMessageInput.value.trim();
-    if (!userMessage) return;
+      addMessage(userMessage, 'user-message');
+      userMessageInput.value = '';
 
-    // Display user message in chat
-    addMessage(userMessage, 'user-message');
+      // Add typing indicator
+      const typingIndicator = document.createElement('div');
+      typingIndicator.id = "typing-indicator";
+      typingIndicator.textContent = "Fit Bot is typing...";
+      document.getElementById('chat-messages').appendChild(typingIndicator);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
-    // Clear input
-    userMessageInput.value = '';
+      try {
+          const response = await fetch('{{ url_for("chat_api") }}', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: userMessage })
+          });
+          const data = await response.json();
+          // Remove typing indicator
+          typingIndicator.remove();
+          if (data.response) {
+              addMessage(data.response, 'ai-message');
+          } else if (data.error) {
+              addMessage(`Error: ${data.error}`, 'ai-message');
+          }
+      } catch (err) {
+          typingIndicator.remove();
+          addMessage('Error connecting to Fit Bot.', 'ai-message');
+      }
+  }
 
-    try {
-        const response = await fetch('{{ url_for("chat_api") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: userMessage })
-        });
-        const data = await response.json();
-
-        if (data.response) {
-            addMessage(data.response, 'ai-message');
-        } else if (data.error) {
-            addMessage(`Error: ${data.error}`, 'ai-message');
-        }
-    } catch (err) {
-        addMessage('Error connecting to Fit Bot.', 'ai-message');
-    }
-}
-
-function addMessage(text, cssClass) {
-    const chatMessages = document.getElementById('chat-messages');
-    const bubble = document.createElement('div');
-    bubble.classList.add('chat-bubble', cssClass);
-    bubble.textContent = text;
-    chatMessages.appendChild(bubble);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+  function addMessage(text, cssClass) {
+      const chatMessages = document.getElementById('chat-messages');
+      const bubble = document.createElement('div');
+      bubble.classList.add('chat-bubble', cssClass);
+      bubble.textContent = text;
+      chatMessages.appendChild(bubble);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 </script>
-<!-- ===================== Fit Bot Chatbox End ===================== -->
-
+<!-- ===================== Enhanced Fit Bot Chatbox End ===================== -->
 {% endblock %}
