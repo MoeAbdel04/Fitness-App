@@ -1,5 +1,5 @@
 import os
-import openai  # Ensure you have installed the openai package: pip install openai
+import openai  # Make sure you have upgraded to openai>=1.0.0: pip install --upgrade openai
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -288,7 +288,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# New route for Fit Bot Chatbox using OpenAI's API
+# New route for Fit Bot Chatbox using OpenAI's API and the new interface
 @app.route('/chat_api', methods=['POST'])
 def chat_api():
     if 'user_id' not in session:
@@ -296,7 +296,7 @@ def chat_api():
 
     user_message = request.json.get('message', '')
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.Chat.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
