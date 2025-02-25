@@ -1,4 +1,5 @@
-import openai  # Ensure you have installed the openai package: pip install openai
+import os
+import openai  # This code assumes openai==0.28.1 is installed
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -66,7 +67,7 @@ def height_to_feet_inches(meters):
     inches = total_inches % 12
     return f"{feet}' {inches}\""
 
-# Register custom filter
+# Register custom filter so templates can convert meters to feet/inches
 app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
 
 @app.route('/')
@@ -287,7 +288,7 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# New route for Fit Bot Chatbox using OpenAI's API
+# Chat API route for Fit Bot using the old ChatCompletion interface
 @app.route('/chat_api', methods=['POST'])
 def chat_api():
     if 'user_id' not in session:
