@@ -1,5 +1,8 @@
 import os
-import openai  # This code assumes openai==0.28.1 is installed
+from dotenv import load_dotenv
+load_dotenv()  # Loads environment variables from .env file
+
+import openai  # openai==0.28.1
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -13,7 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 db = SQLAlchemy(app)
 
-# Set up OpenAI API key from environment variable
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("No OpenAI API key found. Please set the OPENAI_API_KEY environment variable.")
@@ -83,12 +86,12 @@ def register():
         age = int(request.form['age'])
         gender = request.form['gender']
         
-        # Convert feet/inches to meters
+        
         feet = int(request.form['feet'])
         inches = int(request.form['inches'])
         height = round(((feet * 12) + inches) * 0.0254, 2)
         
-        # Convert pounds to kilograms
+        
         weight_lbs = float(request.form['weight_lbs'])
         weight = round(weight_lbs * 0.453592, 2)
         
