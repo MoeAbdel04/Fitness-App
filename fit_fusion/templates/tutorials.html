@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="bi bi-book"></i> Tutorials & Interactive Q&A</h2>
+  
+  <div class="accordion" id="tutorialsAccordion">
+    <!-- Tutorial 1 -->
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          How to perform a proper squat?
+        </button>
+      </h2>
+      <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#tutorialsAccordion">
+        <div class="accordion-body">
+          <p><strong>Steps for a proper squat:</strong></p>
+          <ol>
+            <li>Stand with feet shoulder-width apart and toes slightly turned out.</li>
+            <li>Keep your chest up and your back straight.</li>
+            <li>Slowly bend your knees and lower your hips, as if sitting back into a chair.</li>
+            <li>Go down until your thighs are parallel to the floor (or as low as you can comfortably go).</li>
+            <li>Push through your heels to stand back up.</li>
+          </ol>
+          <p>Tip: Practice your form in front of a mirror or with a light weight until you feel confident.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Tutorial 2 -->
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingTwo">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          What is a good post-workout recovery routine?
+        </button>
+      </h2>
+      <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#tutorialsAccordion">
+        <div class="accordion-body">
+          <p><strong>Recovery Routine Tips:</strong></p>
+          <ul>
+            <li>Cool down with light aerobic exercise for 5-10 minutes.</li>
+            <li>Stretch major muscle groups to aid in recovery.</li>
+            <li>Rehydrate and replenish electrolytes with water or a recovery drink.</li>
+            <li>Eat a balanced snack rich in protein and carbohydrates within 30–60 minutes post-workout.</li>
+            <li>Get adequate rest and quality sleep.</li>
+          </ul>
+          <p>Remember: Recovery is just as important as the workout itself!</p>
+        </div>
+      </div>
+    </div>
+    <!-- Additional Tutorials can be added here -->
+  </div>
+</div>
+{% endblock %}
