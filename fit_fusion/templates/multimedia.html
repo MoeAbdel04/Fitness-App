@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="bi bi-camera-video"></i> Multimedia Fitness Instructions</h2>
+  
+  <!-- Embedded Video: Replace VIDEO_ID with the actual YouTube video ID -->
+  <div class="ratio ratio-16x9 mb-4">
+    <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="Proper Exercise Form" allowfullscreen></iframe>
+  </div>
+  
+  <div class="card p-3">
+    <h4><i class="bi bi-chat-left-text"></i> Ask Fit Bot for Guidance</h4>
+    <p>Watch the video above for proper exercise form and then ask Fit Bot for additional tips or clarifications.</p>
+    <div id="multimedia-chat" class="border p-2 mb-2" style="min-height: 150px; background: #f8f8f8;"></div>
+    <input type="text" id="multimediaMessage" class="form-control mb-2" placeholder="Type your question..." />
+    <button class="btn btn-primary" onclick="sendMultimediaMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  async function sendMultimediaMessage() {
+    const input = document.getElementById('multimediaMessage');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    const chatDiv = document.getElementById('multimedia-chat');
+    const userMsg = document.createElement('div');
+    userMsg.className = 'mb-2';
+    userMsg.innerHTML = `<strong>You:</strong> ${message}`;
+    chatDiv.appendChild(userMsg);
+    input.value = '';
+    
+    try {
+      const response = await fetch('{{ url_for("chat_api") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: message})
+      });
+      const data = await response.json();
+      if (data.response) {
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'mb-2';
+        aiMsg.innerHTML = `<strong>Fit Bot:</strong> ${data.response}`;
+        chatDiv.appendChild(aiMsg);
+      } else if (data.error) {
+        const errMsg = document.createElement('div');
+        errMsg.className = 'mb-2 text-danger';
+        errMsg.innerHTML = `Error: ${data.error}`;
+        chatDiv.appendChild(errMsg);
+      }
+    } catch (err) {
+      const errMsg = document.createElement('div');
+      errMsg.className = 'mb-2 text-danger';
+      errMsg.innerHTML = `Error connecting to Fit Bot.`;
+      chatDiv.appendChild(errMsg);
+    }
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
+</script>
+{% endblock %}

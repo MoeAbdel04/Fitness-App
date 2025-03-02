@@ -54,7 +54,6 @@ def calculate_tdee(user):
         bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) + 5
     else:
         bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) - 161
-    
     activity_factors = {
         'sedentary': 1.2,
         'light': 1.375,
@@ -70,7 +69,7 @@ def height_to_feet_inches(meters):
     inches = total_inches % 12
     return f"{feet}' {inches}\""
 
-# Register custom filter so templates can convert meters to feet/inches
+# Register custom filter for templates
 app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
 
 @app.route('/')
@@ -264,6 +263,11 @@ def logout():
 def tutorials():
     return render_template('tutorials.html')
 
+# New route for Multimedia Integration with video and AI instructions
+@app.route('/multimedia')
+def multimedia():
+    return render_template('multimedia.html')
+
 # Chat API route for Fit Bot using the old ChatCompletion interface
 @app.route('/chat_api', methods=['POST'])
 def chat_api():
@@ -277,10 +281,8 @@ def chat_api():
                 {
                     "role": "system",
                     "content": (
-                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, "
-                        "and overall fitness. If the user's question is related to exercise techniques, proper form, "
-                        "recovery routines, or nutrition tips, reference the interactive tutorials available in the app "
-                        "to provide additional guidance."
+                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, and overall fitness. "
+                        "If the user's question is related to exercise techniques or proper form, feel free to reference the tutorials available in the app."
                     )
                 },
                 {
