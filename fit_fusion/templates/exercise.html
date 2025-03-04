@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="bi bi-camera-video"></i> Real-Time Exercise Analysis</h2>
+  <p>This page uses your webcam to analyze your exercise form in real time. Ensure you allow camera access when prompted.</p>
+  <div style="position: relative; width: 640px; margin: auto;">
+    <video id="video" playsinline style="display: none;"></video>
+    <canvas id="output" width="640" height="480" style="border: 1px solid #ccc;"></canvas>
+  </div>
+</div>
+
+<!-- Load TensorFlow.js and PoseNet -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+<script>
+  async function setupCamera() {
+    const video = document.getElementById('video');
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: false
+      });
+      video.srcObject = stream;
+      return new Promise(resolve => {
+        video.onloadedmetadata = () => {
+          resolve(video);
+        };
+      });
+    } else {
+      alert("Your browser does not support camera access.");
+    }
+  }
+
+  async function loadAndPredict() {
+    const video = await setupCamera();
+    video.play();
+
+    const net = await posenet.load({
+      architecture: 'MobileNetV1',
+      outputStride: 16,
+      inputResolution: { width: 640, height: 480 },
+      multiplier: 0.75
+    });
+
+    const canvas = document.getElementById('output');
+    const ctx = canvas.getContext('2d');
+
+    async function detectPose() {
+      // Estimate pose from the video element.
+      const pose = await net.estimateSinglePose(video, {
+        flipHorizontal: false
+      });
+
+      // Clear the canvas and draw the current video frame.
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Draw keypoints
+      pose.keypoints.forEach(keypoint => {
+        if (keypoint.score > 0.5) {
+          ctx.beginPath();
+          ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
+          ctx.fillStyle = "aqua";
+          ctx.fill();
+        }
+      });
+
+      requestAnimationFrame(detectPose);
+    }
+    detectPose();
+  }
+
+  loadAndPredict();
+</script>
+{% endblock %}
