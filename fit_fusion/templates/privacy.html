@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="bi bi-shield-lock"></i> Privacy & Personal Information</h2>
+  <div class="card p-4">
+    <h4>Your Personal Information</h4>
+    <ul class="list-group">
+      <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+      <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+      <li class="list-group-item"><strong>Age:</strong> {{ user.age }}</li>
+      <li class="list-group-item"><strong>Gender:</strong> {{ user.gender }}</li>
+      <li class="list-group-item"><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</li>
+      <li class="list-group-item"><strong>Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</li>
+      <li class="list-group-item"><strong>Activity Level:</strong> {{ user.activity_level }}</li>
+      <li class="list-group-item"><strong>Workout Preference:</strong> {{ user.workout_preference }}</li>
+      <li class="list-group-item"><strong>Goal:</strong> {{ user.goal }}</li>
+    </ul>
+    <a href="{{ url_for('download_data') }}" class="btn btn-primary mt-3">
+      <i class="bi bi-download"></i> Download My Data (JSON)
+    </a>
+  </div>
+</div>
+{% endblock %}

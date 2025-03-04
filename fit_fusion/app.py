@@ -2,18 +2,30 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads environment variables from .env file
 
-import openai  # This code assumes openai==0.28.1 is installed
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+import openai  # Using openai==0.28.1 (old interface)
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import matplotlib.pyplot as plt
 import io
 import base64
+import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
+
+# Mail configuration: set via .env file
+app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER", "smtp.example.com")
+app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", 587))
+app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", "True") == "True"
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME", "your_email@domain.com")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD", "your_email_password")
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER", "your_email@domain.com")
+
+mail = Mail(app)
 db = SQLAlchemy(app)
 
 # Set up OpenAI API key from environment variable
@@ -21,6 +33,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("No OpenAI API key found. Please set the OPENAI_API_KEY environment variable.")
 
+# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -43,9 +56,9 @@ class WorkoutLog(db.Model):
     reps = db.Column(db.Integer, nullable=False)
     weight = db.Column(db.Float, nullable=True)  # Store weight changes
     date = db.Column(db.DateTime, default=datetime.utcnow)
-
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
+# Utility functions
 def calculate_bmi(weight, height):
     return round(weight / (height ** 2), 2)
 
@@ -72,6 +85,7 @@ def height_to_feet_inches(meters):
 # Register custom filter for templates
 app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
 
+# Routes
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -98,6 +112,16 @@ def register():
                         workout_preference=workout_preference)
         db.session.add(new_user)
         db.session.commit()
+
+        # Send welcome email
+        try:
+            msg = Message("Welcome to Fit Fusion!",
+                          recipients=[email])
+            msg.body = f"Hello {username},\n\nThank you for signing up for Fit Fusion. We're excited to help you reach your fitness goals!\n\nBest,\nThe Fit Fusion Team"
+            mail.send(msg)
+        except Exception as e:
+            flash(f"User registered, but failed to send welcome email: {str(e)}", "warning")
+
         flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
@@ -263,10 +287,57 @@ def logout():
 def tutorials():
     return render_template('tutorials.html')
 
-# New route for Multimedia Integration with video and AI instructions
+# New route for Multimedia Integration
 @app.route('/multimedia')
 def multimedia():
     return render_template('multimedia.html')
+
+# New route for Real-Time Exercise Analysis (if needed)
+@app.route('/exercise')
+def exercise():
+    return render_template('exercise.html')
+
+# New route for Downloading User Data as JSON
+@app.route('/download_data')
+def download_data():
+    if 'user_id' not in session:
+        flash('Please log in to download your data.', 'warning')
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    user_data = {
+        "username": user.username,
+        "email": user.email,
+        "age": user.age,
+        "gender": user.gender,
+        "height": user.height,
+        "weight": user.weight,
+        "activity_level": user.activity_level,
+        "workout_preference": user.workout_preference,
+        "goal": user.goal,
+    }
+    workout_logs = []
+    for log in user.workouts:
+        workout_logs.append({
+            "workout_type": log.workout_type,
+            "exercise": log.exercise,
+            "sets": log.sets,
+            "reps": log.reps,
+            "weight": log.weight,
+            "date": log.date.strftime("%Y-%m-%d %H:%M:%S")
+        })
+    user_data["workout_logs"] = workout_logs
+    json_data = json.dumps(user_data, indent=4)
+    return Response(json_data, mimetype='application/json',
+                    headers={"Content-Disposition": "attachment;filename=user_data.json"})
+
+# New route for Privacy Tab: Display user personal info and data download option
+@app.route('/privacy')
+def privacy():
+    if 'user_id' not in session:
+        flash('Please log in to view privacy information.', 'warning')
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    return render_template('privacy.html', user=user)
 
 # Chat API route for Fit Bot using the old ChatCompletion interface
 @app.route('/chat_api', methods=['POST'])
@@ -281,8 +352,9 @@ def chat_api():
                 {
                     "role": "system",
                     "content": (
-                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, and overall fitness. "
-                        "If the user's question is related to exercise techniques or proper form, feel free to reference the tutorials available in the app."
+                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, "
+                        "and overall fitness. If the user's question is related to exercise techniques or proper form, "
+                        "reference the interactive tutorials available in the app."
                     )
                 },
                 {
