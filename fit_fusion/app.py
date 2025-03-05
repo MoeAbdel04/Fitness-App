@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads environment variables from .env file
 
-import openai  # Using openai==0.28.1
+import openai  # This code assumes openai==0.28.1 is installed
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
@@ -12,14 +12,13 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import json
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 
-# Mail configuration from .env
-app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER", "smtp.example.com")
+# Mail configuration (for welcome emails)
+app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
 app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", 587))
 app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", "True") == "True"
 app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME", "your_email@domain.com")
@@ -34,9 +33,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 if not openai.api_key:
     raise ValueError("No OpenAI API key found. Please set the OPENAI_API_KEY environment variable.")
 
-# Serializer for password reset tokens
-serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-
 # Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,8 +41,8 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     gender = db.Column(db.String(10), nullable=False)
-    height = db.Column(db.Float, nullable=False)  # in meters
-    weight = db.Column(db.Float, nullable=False)  # in kg
+    height = db.Column(db.Float, nullable=False)  # Stored in meters
+    weight = db.Column(db.Float, nullable=False)  # Stored in kg
     activity_level = db.Column(db.String(20), nullable=False)
     workout_preference = db.Column(db.String(20), nullable=True)
     goal = db.Column(db.String(50), nullable=True)
@@ -58,7 +54,7 @@ class WorkoutLog(db.Model):
     exercise = db.Column(db.String(100), nullable=False)
     sets = db.Column(db.Integer, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
-    weight = db.Column(db.Float, nullable=True)  # in kg
+    weight = db.Column(db.Float, nullable=True)  # Store weight changes
     date = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
@@ -145,49 +141,40 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     return render_template('login.html')
 
+# On-site Forgot Password Feature (No email verification)
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
         if user:
-            token = serializer.dumps(email, salt='password-reset-salt')
-            reset_link = url_for('reset_password', token=token, _external=True)
-            try:
-                msg = Message("Password Reset Request", recipients=[email])
-                msg.body = f"Hello {user.username},\n\nTo reset your password, click the following link:\n{reset_link}\n\nIf you did not request this, please ignore this email."
-                mail.send(msg)
-                flash('A password reset link has been sent to your email.', 'info')
-            except Exception as e:
-                flash(f"Error sending email: {str(e)}", "danger")
+            session['reset_email'] = email
+            flash('Email verified. You can now reset your password on-site.', 'info')
+            return redirect(url_for('reset_password'))
         else:
             flash('No account found with that email address.', 'warning')
-        return redirect(url_for('login'))
+            return redirect(url_for('forgot_password'))
     return render_template('forgot_password.html')
 
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    try:
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
-    except SignatureExpired:
-        flash('The password reset link has expired.', 'danger')
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if 'reset_email' not in session:
+        flash('Please use the forgot password form first.', 'warning')
         return redirect(url_for('forgot_password'))
-    except BadSignature:
-        flash('Invalid password reset link.', 'danger')
-        return redirect(url_for('forgot_password'))
-    
     if request.method == 'POST':
         new_password = request.form.get('password')
+        email = session.get('reset_email')
         user = User.query.filter_by(email=email).first()
         if user:
             user.password = generate_password_hash(new_password, method='pbkdf2:sha256')
             db.session.commit()
+            session.pop('reset_email', None)
             flash('Your password has been updated. Please log in.', 'success')
             return redirect(url_for('login'))
         else:
             flash('User not found.', 'danger')
             return redirect(url_for('forgot_password'))
-    return render_template('reset_password.html', token=token)
+    return render_template('reset_password.html')
 
 @app.route('/dashboard')
 def dashboard():
