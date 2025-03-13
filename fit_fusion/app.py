@@ -374,8 +374,8 @@ def privacy():
     user = User.query.get(session['user_id'])
     return render_template('privacy.html', user=user)
 
-# Chat API route for Fit Bot using the old ChatCompletion interface
-@app.route('/chat_api', methods=['POST'])
+# Chat API route for Fit Bot 
+@@app.route('/chat_api', methods=['POST'])
 def chat_api():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
@@ -387,9 +387,10 @@ def chat_api():
                 {
                     "role": "system",
                     "content": (
-                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, "
-                        "and overall fitness. If the user's question is related to exercise techniques or proper form, "
-                        "reference the interactive tutorials available in the app."
+                        "You are Fit Bot, an energetic, friendly, and concise AI fitness assistant. "
+                        "Provide short, efficient, and engaging advice on workouts, nutrition, and overall fitness. "
+                        "Keep your responses brief yet informative, and add a touch of personality and support. "
+                        "If the user's question is about exercise techniques or proper form, reference available tutorials briefly."
                     )
                 },
                 {
@@ -402,6 +403,7 @@ def chat_api():
         return jsonify({"response": f"Fit Bot: {ai_response}"})
     except Exception as e:
         return jsonify({"error": str(e)})
+
 
 if __name__ == '__main__':
     with app.app_context():
