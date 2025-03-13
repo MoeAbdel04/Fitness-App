@@ -375,7 +375,7 @@ def privacy():
     return render_template('privacy.html', user=user)
 
 # Chat API route for Fit Bot 
-@@app.route('/chat_api', methods=['POST'])
+@app.route('/chat_api', methods=['POST'])
 def chat_api():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
