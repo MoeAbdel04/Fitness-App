@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-  /* Custom Pagination Colors (if needed) */
+  /* Custom Pagination Colors to match orange theme */
   .pagination .page-item .page-link {
     color: #ff6600;
     border: 1px solid #ff6600;
@@ -22,150 +22,7 @@
     border-color: #ddd;
     background-color: #f8f9fa;
   }
-</style>
 
-<div class="container mt-4">
-  <div class="card p-4">
-    <h2 class="mb-3 text-center">
-      <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
-    </h2>
-    
-    <!-- User Stats -->
-    <div class="row">
-      <div class="col-md-6">
-        <p><strong>BMI:</strong> {{ bmi }}</p>
-        <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
-        <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
-        <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
-      </div>
-    </div>
-    
-    <!-- Graph Section -->
-    <h3 class="mt-4">
-      <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
-    </h3>
-    <div class="chart-container mb-4">
-      {% if plot_url %}
-        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow" alt="Fitness Progress Graph">
-      {% else %}
-        <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
-      {% endif %}
-    </div>
-    
-    <!-- Recommended Workout -->
-    <h3 class="mt-4">
-      <i class="bi bi-lightning-fill"></i> Recommended Workout
-    </h3>
-    <p>{{ recommended_workout }}</p>
-    
-    <!-- Log a Workout Form -->
-    <h3 class="mt-4">
-      <i class="bi bi-pencil-square"></i> Log a Workout
-    </h3>
-    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
-      <div class="mb-3">
-        <label class="form-label">Workout Type</label>
-        <select name="workout_type" class="form-control">
-          <option value="Cardio">Cardio</option>
-          <option value="Weight Training">Weight Training</option>
-          <option value="Strength Training">Strength Training</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Exercise</label>
-        <input type="text" name="exercise" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Sets</label>
-        <input type="number" name="sets" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Reps</label>
-        <input type="number" name="reps" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Current Weight (lbs)</label>
-        <input type="number" step="0.1" name="weight" class="form-control">
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Log Workout</button>
-    </form>
-    
-    <!-- Workout History with Edit/Delete Dropdown -->
-    <h3 class="mt-4">
-      <i class="bi bi-clock-history"></i> Workout History
-    </h3>
-    <table class="table table-bordered table-hover">
-      <thead class="table-dark">
-        <tr>
-          <th>Date</th>
-          <th>Workout Type</th>
-          <th>Exercise</th>
-          <th>Sets</th>
-          <th>Reps</th>
-          <th>Weight (lbs)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for workout in workouts %}
-        <tr>
-          <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ workout.workout_type }}</td>
-          <td>{{ workout.exercise }}</td>
-          <td>{{ workout.sets }}</td>
-          <td>{{ workout.reps }}</td>
-          <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
-          <td>
-            <div class="dropdown">
-              <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ workout.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-three-dots"></i>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ workout.id }}">
-                <li><a class="dropdown-item" href="{{ url_for('edit_workout', workout_id=workout.id) }}">Edit</a></li>
-                <li>
-                  <form action="{{ url_for('delete_workout', workout_id=workout.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this workout?');">
-                    <button type="submit" class="dropdown-item">Delete</button>
-                  </form>
-                </li>
-              </ul>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    
-    <!-- Pagination -->
-    <nav aria-label="Workout history pagination">
-      <ul class="pagination justify-content-center">
-        {% if pagination.has_prev %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">Previous</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Previous</span>
-          </li>
-        {% endif %}
-        <li class="page-item active">
-          <span class="page-link">{{ pagination.page }}</span>
-        </li>
-        {% if pagination.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">Next</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Next</span>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
-</div>
-
-<!-- ===================== Fit Bot Chatbox Start ===================== -->
-<style>
   /* Fit Bot Chatbox Styling */
   #chat-icon {
       position: fixed;
@@ -300,7 +157,6 @@
   #chat-input button:hover {
       background-color: #e65c00;
   }
-  /* Typing Indicator */
   #typing-indicator {
       font-style: italic;
       color: #666;
@@ -308,6 +164,147 @@
   }
 </style>
 
+<div class="container mt-4">
+  <div class="card p-4">
+    <h2 class="mb-3 text-center">
+      <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
+    </h2>
+    
+    <!-- User Stats -->
+    <div class="row">
+      <div class="col-md-6">
+        <p><strong>BMI:</strong> {{ bmi }}</p>
+        <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
+        <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
+        <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
+      </div>
+    </div>
+    
+    <!-- Graph Section -->
+    <h3 class="mt-4">
+      <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
+    </h3>
+    <div class="chart-container mb-4">
+      {% if plot_url %}
+        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow" alt="Fitness Progress Graph">
+      {% else %}
+        <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
+      {% endif %}
+    </div>
+    
+    <!-- Recommended Workout -->
+    <h3 class="mt-4">
+      <i class="bi bi-lightning-fill"></i> Recommended Workout
+    </h3>
+    <p>{{ recommended_workout }}</p>
+    
+    <!-- Log a Workout Form -->
+    <h3 class="mt-4">
+      <i class="bi bi-pencil-square"></i> Log a Workout
+    </h3>
+    <form method="POST" action="{{ url_for('log_workout') }}" class="mb-4">
+      <div class="mb-3">
+        <label class="form-label">Workout Type</label>
+        <select name="workout_type" class="form-control">
+          <option value="Cardio">Cardio</option>
+          <option value="Weight Training">Weight Training</option>
+          <option value="Strength Training">Strength Training</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Exercise</label>
+        <input type="text" name="exercise" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Sets</label>
+        <input type="number" name="sets" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Reps</label>
+        <input type="number" name="reps" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Current Weight (lbs)</label>
+        <input type="number" step="0.1" name="weight" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Log Workout</button>
+    </form>
+    
+    <!-- Workout History -->
+    <h3 class="mt-4">
+      <i class="bi bi-clock-history"></i> Workout History
+    </h3>
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Date</th>
+          <th>Workout Type</th>
+          <th>Exercise</th>
+          <th>Sets</th>
+          <th>Reps</th>
+          <th>Weight (lbs)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for workout in workouts %}
+        <tr>
+          <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ workout.workout_type }}</td>
+          <td>{{ workout.exercise }}</td>
+          <td>{{ workout.sets }}</td>
+          <td>{{ workout.reps }}</td>
+          <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
+          <td>
+            <div class="dropdown">
+              <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ workout.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-three-dots"></i>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ workout.id }}">
+                <li><a class="dropdown-item" href="{{ url_for('edit_workout', workout_id=workout.id) }}">Edit</a></li>
+                <li>
+                  <form action="{{ url_for('delete_workout', workout_id=workout.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this workout?');">
+                    <button type="submit" class="dropdown-item">Delete</button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Workout history pagination">
+      <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Previous</span>
+          </li>
+        {% endif %}
+        <li class="page-item active">
+          <span class="page-link">{{ pagination.page }}</span>
+        </li>
+        {% if pagination.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">Next</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Next</span>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<!-- ===================== Fit Bot Chatbox Start ===================== -->
 <!-- Floating Chat Icon -->
 <button id="chat-icon">
   <i class="bi bi-chat-left-text-fill"></i>
@@ -347,22 +344,39 @@
       const bubble = document.createElement('div');
       bubble.classList.add('chat-bubble', cssClass);
       bubble.textContent = text;
+
+      // Format time in 12-hour format (HH:MM AM/PM)
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
       const timestamp = document.createElement('div');
       timestamp.classList.add('timestamp');
-      const now = new Date();
-      timestamp.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      timestamp.textContent = timeString;
       bubble.appendChild(timestamp);
+
       chatMessages.appendChild(bubble);
       chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
+  // Pressing Enter in the chat input sends the message
+  const userMessageInput = document.getElementById('userMessage');
+  userMessageInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission if any
+      sendMessage();
+    }
+  });
+
   async function sendMessage() {
-      const userMessageInput = document.getElementById('userMessage');
       const userMessage = userMessageInput.value.trim();
       if (!userMessage) return;
       addMessage(userMessage, 'user-message');
       userMessageInput.value = '';
 
+      // Show "Fit Bot is typing..." indicator
       const typingIndicator = document.createElement('div');
       typingIndicator.id = "typing-indicator";
       typingIndicator.textContent = "Fit Bot is typing...";
@@ -388,5 +402,5 @@
       }
   }
 </script>
-<!-- ===================== Enhanced Fit Bot Chatbox End ===================== -->
+<!-- ===================== Fit Bot Chatbox End ===================== -->
 {% endblock %}
