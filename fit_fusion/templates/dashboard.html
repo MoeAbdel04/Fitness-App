@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-  /* Custom pagination colors to match the site's orange theme */
+  /* Custom Pagination Colors (if needed) */
   .pagination .page-item .page-link {
-    color: #ff6600; /* Text color for links */
-    border: 1px solid #ff6600; /* Border color for links */
-    background-color: #ffffff; /* Background for normal links */
+    color: #ff6600;
+    border: 1px solid #ff6600;
+    background-color: #ffffff;
   }
   .pagination .page-item .page-link:hover {
-    background-color: #e65c00; /* Hover background */
-    border-color: #e65c00;     /* Hover border */
-    color: #ffffff;           /* Hover text color */
+    background-color: #e65c00;
+    border-color: #e65c00;
+    color: #ffffff;
   }
   .pagination .page-item.active .page-link {
-    background-color: #ff6600; /* Active page background */
-    border-color: #ff6600;     /* Active page border */
-    color: #ffffff;            /* Active page text color */
+    background-color: #ff6600;
+    border-color: #ff6600;
+    color: #ffffff;
   }
   .pagination .page-item.disabled .page-link {
-    color: #aaa;               /* Disabled link text color */
-    border-color: #ddd;        /* Disabled link border color */
-    background-color: #f8f9fa; /* Disabled link background color */
+    color: #aaa;
+    border-color: #ddd;
+    background-color: #f8f9fa;
   }
 </style>
 
@@ -46,7 +46,7 @@
     </h3>
     <div class="chart-container mb-4">
       {% if plot_url %}
-        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded" alt="Fitness Progress Graph">
+        <img src="data:image/png;base64,{{ plot_url }}" class="img-fluid rounded shadow" alt="Fitness Progress Graph">
       {% else %}
         <p class="text-muted">No fitness data available yet. Log your weight to track progress!</p>
       {% endif %}
@@ -90,7 +90,7 @@
       <button type="submit" class="btn btn-primary w-100">Log Workout</button>
     </form>
     
-    <!-- Workout History -->
+    <!-- Workout History with Edit/Delete Dropdown -->
     <h3 class="mt-4">
       <i class="bi bi-clock-history"></i> Workout History
     </h3>
@@ -163,4 +163,230 @@
     </nav>
   </div>
 </div>
+
+<!-- ===================== Fit Bot Chatbox Start ===================== -->
+<style>
+  /* Fit Bot Chatbox Styling */
+  #chat-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #ff6600;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      padding: 15px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  #chat-window {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 320px;
+      max-height: 500px;
+      background: linear-gradient(135deg, #ffffff, #f9f9f9);
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      z-index: 1000;
+      overflow: hidden;
+  }
+  #chat-window.chat-open {
+      display: flex;
+      animation: fadeIn 0.3s ease-in-out;
+  }
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+  #chat-header {
+      background-color: #ff6600;
+      color: #fff;
+      padding: 12px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+  }
+  #chat-header span {
+      display: flex;
+      align-items: center;
+  }
+  #chat-header span i {
+      margin-right: 8px;
+  }
+  #chat-header .header-buttons {
+      display: flex;
+      align-items: center;
+  }
+  #chat-header .header-buttons button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      margin-left: 10px;
+      cursor: pointer;
+  }
+  #chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      background: #f5f5f5;
+  }
+  .chat-bubble {
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 15px;
+      max-width: 80%;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+  }
+  @keyframes slideIn {
+      from { transform: translateX(10px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+  }
+  .user-message {
+      background-color: #e0e0e0;
+      align-self: flex-end;
+      margin-left: auto;
+      border-bottom-right-radius: 0;
+  }
+  .ai-message {
+      background-color: #dff0d8;
+      align-self: flex-start;
+      margin-right: auto;
+      border-bottom-left-radius: 0;
+  }
+  .timestamp {
+      font-size: 0.7rem;
+      color: #999;
+      position: absolute;
+      bottom: -15px;
+      right: 10px;
+  }
+  #chat-input {
+      display: flex;
+      padding: 10px;
+      background-color: #f8f9fa;
+      align-items: center;
+  }
+  #chat-input input {
+      flex: 1;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      outline: none;
+  }
+  #chat-input button {
+      background-color: #ff6600;
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      margin-left: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+  }
+  #chat-input button:hover {
+      background-color: #e65c00;
+  }
+  /* Typing Indicator */
+  #typing-indicator {
+      font-style: italic;
+      color: #666;
+      margin-bottom: 5px;
+  }
+</style>
+
+<!-- Floating Chat Icon -->
+<button id="chat-icon">
+  <i class="bi bi-chat-left-text-fill"></i>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-window">
+  <div id="chat-header">
+      <span><i class="bi bi-robot"></i> Fit Bot</span>
+      <div class="header-buttons">
+          <button onclick="clearChat()"><i class="bi bi-trash"></i></button>
+          <button onclick="toggleChat()">&times;</button>
+      </div>
+  </div>
+  <div id="chat-messages" class="d-flex flex-column"></div>
+  <div id="chat-input">
+      <input type="text" id="userMessage" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  // Toggle the chat window visibility
+  function toggleChat() {
+      document.getElementById('chat-window').classList.toggle('chat-open');
+  }
+  document.getElementById('chat-icon').addEventListener('click', toggleChat);
+
+  // Clear the chat messages
+  function clearChat() {
+      document.getElementById('chat-messages').innerHTML = '';
+  }
+
+  // Append message with optional timestamp
+  function addMessage(text, cssClass) {
+      const chatMessages = document.getElementById('chat-messages');
+      const bubble = document.createElement('div');
+      bubble.classList.add('chat-bubble', cssClass);
+      bubble.textContent = text;
+      const timestamp = document.createElement('div');
+      timestamp.classList.add('timestamp');
+      const now = new Date();
+      timestamp.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      bubble.appendChild(timestamp);
+      chatMessages.appendChild(bubble);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  async function sendMessage() {
+      const userMessageInput = document.getElementById('userMessage');
+      const userMessage = userMessageInput.value.trim();
+      if (!userMessage) return;
+      addMessage(userMessage, 'user-message');
+      userMessageInput.value = '';
+
+      const typingIndicator = document.createElement('div');
+      typingIndicator.id = "typing-indicator";
+      typingIndicator.textContent = "Fit Bot is typing...";
+      document.getElementById('chat-messages').appendChild(typingIndicator);
+      document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+
+      try {
+          const response = await fetch('{{ url_for("chat_api") }}', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: userMessage })
+          });
+          const data = await response.json();
+          typingIndicator.remove();
+          if (data.response) {
+              addMessage(data.response, 'ai-message');
+          } else if (data.error) {
+              addMessage(`Error: ${data.error}`, 'ai-message');
+          }
+      } catch (err) {
+          typingIndicator.remove();
+          addMessage('Error connecting to Fit Bot.', 'ai-message');
+      }
+  }
+</script>
+<!-- ===================== Enhanced Fit Bot Chatbox End ===================== -->
 {% endblock %}
