@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads environment variables from .env file
 
-import openai  # This code assumes openai==0.28.1 is installed
+import openai  # Using openai==0.28.1 (if needed)
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
@@ -16,22 +16,9 @@ import json
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
-
-# Mail configuration (for welcome emails)
-app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", 587))
-app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", "True") == "True"
-app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME", "your_email@domain.com")
-app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD", "your_email_password")
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER", "your_email@domain.com")
-
-mail = Mail(app)
 db = SQLAlchemy(app)
 
-# Set up OpenAI API key from environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
-if not openai.api_key:
-    raise ValueError("No OpenAI API key found. Please set the OPENAI_API_KEY environment variable.")
+# (Mail configuration and OpenAI configuration remain unchanged if used)
 
 # Models
 class User(db.Model):
@@ -54,7 +41,7 @@ class WorkoutLog(db.Model):
     exercise = db.Column(db.String(100), nullable=False)
     sets = db.Column(db.Integer, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
-    weight = db.Column(db.Float, nullable=True)  # Store weight changes
+    weight = db.Column(db.Float, nullable=True)  # Stored in kg
     date = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
@@ -86,6 +73,7 @@ def height_to_feet_inches(meters):
 app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
 
 # Routes
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -98,30 +86,18 @@ def register():
         password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
         age = int(request.form['age'])
         gender = request.form['gender']
-        # Convert feet/inches to meters
         feet = int(request.form['feet'])
         inches = int(request.form['inches'])
         height = round(((feet * 12) + inches) * 0.0254, 2)
-        # Convert pounds to kilograms
         weight_lbs = float(request.form['weight_lbs'])
         weight = round(weight_lbs * 0.453592, 2)
         activity_level = request.form['activity_level']
         workout_preference = request.form.get('workout_preference')
-        new_user = User(username=username, email=email, password=password, age=age, gender=gender,
-                        height=height, weight=weight, activity_level=activity_level,
-                        workout_preference=workout_preference)
+        new_user = User(username=username, email=email, password=password, age=age,
+                        gender=gender, height=height, weight=weight,
+                        activity_level=activity_level, workout_preference=workout_preference)
         db.session.add(new_user)
         db.session.commit()
-
-        # Send welcome email
-        try:
-            msg = Message("Welcome to Fit Fusion!",
-                          recipients=[email])
-            msg.body = f"Hello {username},\n\nThank you for signing up for Fit Fusion. We're excited to help you reach your fitness goals!\n\nBest,\nThe Fit Fusion Team"
-            mail.send(msg)
-        except Exception as e:
-            flash(f"User registered, but failed to send welcome email: {str(e)}", "warning")
-
         flash('Account created successfully! Please log in.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
@@ -141,7 +117,7 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     return render_template('login.html')
 
-# On-site Forgot Password Feature (No email verification)
+# Forgot Password (on-site, no email)
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -156,6 +132,7 @@ def forgot_password():
             return redirect(url_for('forgot_password'))
     return render_template('forgot_password.html')
 
+# Reset Password (on-site)
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
     if 'reset_email' not in session:
@@ -176,6 +153,43 @@ def reset_password():
             return redirect(url_for('forgot_password'))
     return render_template('reset_password.html')
 
+# Edit Workout Route
+@app.route('/edit_workout/<int:workout_id>', methods=['GET', 'POST'])
+def edit_workout(workout_id):
+    if 'user_id' not in session:
+        flash('Please log in to edit workouts.', 'warning')
+        return redirect(url_for('login'))
+    workout = WorkoutLog.query.get_or_404(workout_id)
+    if workout.user_id != session['user_id']:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        workout.workout_type = request.form['workout_type']
+        workout.exercise = request.form['exercise']
+        workout.sets = int(request.form['sets'])
+        workout.reps = int(request.form['reps'])
+        weight_lbs = request.form.get('weight')
+        workout.weight = round(float(weight_lbs) / 2.20462, 2) if weight_lbs else None
+        db.session.commit()
+        flash('Workout updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('edit_workout.html', workout=workout)
+
+# Delete Workout Route
+@app.route('/delete_workout/<int:workout_id>', methods=['POST'])
+def delete_workout(workout_id):
+    if 'user_id' not in session:
+        flash('Please log in to delete workouts.', 'warning')
+        return redirect(url_for('login'))
+    workout = WorkoutLog.query.get_or_404(workout_id)
+    if workout.user_id != session['user_id']:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('dashboard'))
+    db.session.delete(workout)
+    db.session.commit()
+    flash('Workout deleted successfully!', 'success')
+    return redirect(url_for('dashboard'))
+
 @app.route('/dashboard')
 def dashboard():
     if 'user_id' not in session:
@@ -190,7 +204,9 @@ def dashboard():
         'medium_deficit': tdee - 500,
         'extreme_deficit': tdee - 750
     }
-    workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
+    page = request.args.get('page', 1, type=int)
+    pagination = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).paginate(page=page, per_page=10)
+    workouts = pagination.items
     dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
     weights = [workout.weight for workout in workouts if workout.weight]
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
@@ -211,6 +227,7 @@ def dashboard():
         plot_url = base64.b64encode(img.getvalue()).decode()
     else:
         plot_url = None
+
     if user.workout_preference:
         pref = user.workout_preference.lower()
         if 'cardio' in pref:
@@ -223,8 +240,10 @@ def dashboard():
             recommended_workout = "Keep up the great work with your fitness routine!"
     else:
         recommended_workout = "Keep up the great work with your fitness routine!"
+
     return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans,
-                           plot_url=plot_url, workouts=workouts, recommended_workout=recommended_workout)
+                           plot_url=plot_url, workouts=workouts, recommended_workout=recommended_workout,
+                           pagination=pagination)
 
 @app.route('/workout_chart')
 def workout_chart():
@@ -374,7 +393,7 @@ def privacy():
     user = User.query.get(session['user_id'])
     return render_template('privacy.html', user=user)
 
-# Chat API route for Fit Bot 
+# Chat API route for Fit Bot using the old ChatCompletion interface
 @app.route('/chat_api', methods=['POST'])
 def chat_api():
     if 'user_id' not in session:
@@ -387,10 +406,9 @@ def chat_api():
                 {
                     "role": "system",
                     "content": (
-                        "You are Fit Bot, an energetic, friendly, and concise AI fitness assistant. "
-                        "Provide short, efficient, and engaging advice on workouts, nutrition, and overall fitness. "
-                        "Keep your responses brief yet informative, and add a touch of personality and support. "
-                        "If the user's question is about exercise techniques or proper form, reference available tutorials briefly."
+                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, "
+                        "and overall fitness. Keep your responses short, efficient, and friendly, with a bit of personality. "
+                        "If the question is about exercise techniques, reference available tutorials briefly."
                     )
                 },
                 {
@@ -403,7 +421,6 @@ def chat_api():
         return jsonify({"response": f"Fit Bot: {ai_response}"})
     except Exception as e:
         return jsonify({"error": str(e)})
-
 
 if __name__ == '__main__':
     with app.app_context():

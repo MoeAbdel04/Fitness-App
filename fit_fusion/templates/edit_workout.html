@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Edit Workout</h2>
+  <div class="card p-4">
+    <form method="POST" action="{{ url_for('edit_workout', workout_id=workout.id) }}">
+      <div class="mb-3">
+        <label class="form-label">Workout Type</label>
+        <select name="workout_type" class="form-control">
+          <option value="Cardio" {% if workout.workout_type == 'Cardio' %}selected{% endif %}>Cardio</option>
+          <option value="Weight Training" {% if workout.workout_type == 'Weight Training' %}selected{% endif %}>Weight Training</option>
+          <option value="Strength Training" {% if workout.workout_type == 'Strength Training' %}selected{% endif %}>Strength Training</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Exercise</label>
+        <input type="text" name="exercise" class="form-control" value="{{ workout.exercise }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Sets</label>
+        <input type="number" name="sets" class="form-control" value="{{ workout.sets }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Reps</label>
+        <input type="number" name="reps" class="form-control" value="{{ workout.reps }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Current Weight (lbs)</label>
+        <input type="number" step="0.1" name="weight" class="form-control" value="{{ workout.weight * 2.20462 | round(1) if workout.weight else '' }}">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Update Workout</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
