@@ -1,55 +1,56 @@
 # Fit Fusion
 
-Fit Fusion is an AI-powered personal fitness tracker web application built with Flask. It helps users manage their fitness journey by tracking workouts, calculating key metrics like BMI and TDEE, and providing tailored workout recommendations—all in a clean, responsive interface with dark/light mode support. With the integrated Fit Bot AI chatbox, users can ask fitness-related questions directly from the dashboard.
+Fit Fusion is a Flask-based fitness tracking application that allows users to:
+
+- Register and log in.
+- Track workouts (with sets, reps, and weight).
+- View a paginated workout history (10 per page).
+- Edit or delete individual workouts via a 3‑dot dropdown menu.
+- Monitor progress with a Matplotlib-based weight/BMI chart.
+- Update personal profile information.
+- Reset passwords on-site (no email verification).
+- Download personal data in JSON format.
+- Interact with Fit Bot for quick fitness Q&A and references to tutorials.
 
 ## Features
 
-- **User Authentication**  
-  Secure registration, login, and logout functionalities with password hashing.
+1. **User Authentication**  
+   - Register a new account, specifying age, gender, height (in feet/inches), and weight (in lbs).
+   - Log in securely (passwords hashed with PBKDF2).
+   - Log out to clear sessions.
 
-- **User Profile**  
-  View and update personal information such as username, email, age, gender, height (in feet and inches), weight (in lbs), activity level, workout preference, and fitness goals.
+2. **Dashboard**  
+   - Displays user’s BMI, current weight, and TDEE-based calorie plan.
+   - Shows a Matplotlib-generated chart of weight and BMI over time.
+   - Paginated workout history (10 per page) with 3‑dot dropdown for edit/delete.
+   - Allows logging new workouts with sets, reps, and weight.
 
-- **Workout Logging**  
-  Log workouts with details including workout type, exercise, sets, reps, and current weight. All entries are saved in a SQLite database.
+3. **Workout Management**  
+   - **Add Workouts**: Choose workout type (Cardio, Weight Training, Strength Training), specify sets, reps, and weight.
+   - **Edit Workouts**: Update an existing workout via an edit page.
+   - **Delete Workouts**: Remove workouts you no longer need.
 
-- **Progress Tracking**  
-  Visualize fitness progress with interactive charts that display weight changes (in lbs) and BMI trends over time using Matplotlib.
+4. **On-Site Password Reset**  
+   - “Forgot Password” workflow that verifies email and allows resetting on-site without email links.
 
-- **Calorie and TDEE Calculation**  
-  Automatically calculates Total Daily Energy Expenditure (TDEE) based on user data and suggests calorie maintenance and deficit plans.
+5. **Profile & Privacy**  
+   - Update personal info (username, email, age, gender, height, weight).
+   - Download personal data (including workout logs) as JSON.
+   - View personal data on a privacy tab.
 
-- **Recommended Workouts**  
-  Provides personalized workout suggestions based on the user’s workout preference (e.g., cardio, weight training, or strength training).
+6. **Tutorials & Multimedia**  
+   - Separate pages for tutorials and multimedia content, referencing proper exercise form, nutrition tips, etc.
+   - Fit Bot references tutorials in Q&A if needed.
 
-- **Fit Bot (AI Chatbox)**  
-  - Powered by OpenAI (GPT-3.5 Turbo or GPT-4, depending on your plan).  
-  - Users can chat with “Fit Bot” on the dashboard page for workout, nutrition, and fitness advice.  
-  - The chatbox can be opened or closed with a toggle in the bottom-right corner.
+7. **Fit Bot**  
+   - AI-powered assistant that provides concise, friendly advice on workouts and nutrition.
+   - System prompt instructs Fit Bot to keep responses short, efficient, and supportive.
 
-- **Dark/Light Mode Toggle**  
-  Enhance your experience with a dark mode toggle, allowing you to switch between light and dark themes.
+## Installation & Setup
 
-- **Responsive Design**  
-  Built using Bootstrap 5, ensuring a seamless experience across devices.
+1. **Clone or Download** this repository.
 
-## Technologies Used
-
-- **Backend**: Python, Flask, SQLAlchemy, Werkzeug (for password hashing)  
-- **Frontend**: HTML, CSS, Bootstrap 5, JavaScript  
-- **Database**: SQLite  
-- **Charting**: Matplotlib  
-- **AI Integration**: OpenAI Python library  
-- **Others**: Base64 (for encoding images)
-
-## Installation and Setup
-
-1. source venv/bin/activate 
-    python app.py
-
-
-
-2. **Clone the Repository:**
+2. **Create and activate a virtual environment** (optional but recommended):
    ```bash
-   git clone <repository-url>
-   cd fit-fusion
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
