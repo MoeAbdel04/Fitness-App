@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+  /* Custom pagination colors to match the site's orange theme */
+  .pagination .page-item .page-link {
+    color: #ff6600; /* Text color for links */
+    border: 1px solid #ff6600; /* Border color for links */
+    background-color: #ffffff; /* Background for normal links */
+  }
+  .pagination .page-item .page-link:hover {
+    background-color: #e65c00; /* Hover background */
+    border-color: #e65c00;     /* Hover border */
+    color: #ffffff;           /* Hover text color */
+  }
+  .pagination .page-item.active .page-link {
+    background-color: #ff6600; /* Active page background */
+    border-color: #ff6600;     /* Active page border */
+    color: #ffffff;            /* Active page text color */
+  }
+  .pagination .page-item.disabled .page-link {
+    color: #aaa;               /* Disabled link text color */
+    border-color: #ddd;        /* Disabled link border color */
+    background-color: #f8f9fa; /* Disabled link background color */
+  }
+</style>
+
 <div class="container mt-4">
   <div class="card p-4">
     <h2 class="mb-3 text-center">
@@ -110,6 +134,7 @@
         {% endfor %}
       </tbody>
     </table>
+    
     <!-- Pagination -->
     <nav aria-label="Workout history pagination">
       <ul class="pagination justify-content-center">
