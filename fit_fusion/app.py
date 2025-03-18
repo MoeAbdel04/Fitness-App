@@ -2,10 +2,19 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # Loads environment variables from .env file
 
-import openai  # Using openai==0.28.1 (if needed)
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, Response
+import openai  # Using openai==0.28.1
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash,
+    jsonify,
+    Response
+)
 from flask_sqlalchemy import SQLAlchemy
-from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -15,10 +24,8 @@ import json
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your_secret_key")
 db = SQLAlchemy(app)
-
-# (Mail configuration and OpenAI configuration remain unchanged if used)
 
 # Models
 class User(db.Model):
@@ -45,7 +52,7 @@ class WorkoutLog(db.Model):
     date = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
-# Utility functions
+# Utility Functions
 def calculate_bmi(weight, height):
     return round(weight / (height ** 2), 2)
 
@@ -93,9 +100,17 @@ def register():
         weight = round(weight_lbs * 0.453592, 2)
         activity_level = request.form['activity_level']
         workout_preference = request.form.get('workout_preference')
-        new_user = User(username=username, email=email, password=password, age=age,
-                        gender=gender, height=height, weight=weight,
-                        activity_level=activity_level, workout_preference=workout_preference)
+        new_user = User(
+            username=username,
+            email=email,
+            password=password,
+            age=age,
+            gender=gender,
+            height=height,
+            weight=weight,
+            activity_level=activity_level,
+            workout_preference=workout_preference
+        )
         db.session.add(new_user)
         db.session.commit()
         flash('Account created successfully! Please log in.', 'success')
@@ -117,7 +132,7 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     return render_template('login.html')
 
-# Forgot Password (on-site, no email)
+# Forgot Password (On-site, no email)
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -132,7 +147,7 @@ def forgot_password():
             return redirect(url_for('forgot_password'))
     return render_template('forgot_password.html')
 
-# Reset Password (on-site)
+# Reset Password (On-site)
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
     if 'reset_email' not in session:
@@ -212,8 +227,10 @@ def dashboard():
     bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
     if dates:
         plt.figure(figsize=(8, 5))
-        plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
-        plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
+        plt.plot(dates, [w * 2.20462 for w in weights],
+                 marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
+        plt.plot(dates, bmi_values,
+                 marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
         plt.xlabel('Date', fontsize=12, fontweight='bold')
         plt.ylabel('Weight (lbs) / BMI', fontsize=12, fontweight='bold')
         plt.title(f"{user.username}'s Fitness Progress", fontsize=14, fontweight='bold')
@@ -241,9 +258,16 @@ def dashboard():
     else:
         recommended_workout = "Keep up the great work with your fitness routine!"
 
-    return render_template('dashboard.html', user=user, bmi=bmi, calorie_plans=calorie_plans,
-                           plot_url=plot_url, workouts=workouts, recommended_workout=recommended_workout,
-                           pagination=pagination)
+    return render_template(
+        'dashboard.html',
+        user=user,
+        bmi=bmi,
+        calorie_plans=calorie_plans,
+        plot_url=plot_url,
+        workouts=workouts,
+        recommended_workout=recommended_workout,
+        pagination=pagination
+    )
 
 @app.route('/workout_chart')
 def workout_chart():
@@ -259,8 +283,10 @@ def workout_chart():
         flash('No valid weight data available to generate the graph.', 'warning')
         return redirect(url_for('dashboard'))
     plt.figure(figsize=(8, 5))
-    plt.plot(dates, [w * 2.20462 for w in weights], marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
-    plt.plot(dates, bmi_values, marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
+    plt.plot(dates, [w * 2.20462 for w in weights],
+             marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
+    plt.plot(dates, bmi_values,
+             marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
     plt.xlabel('Date', fontsize=12, fontweight='bold')
     plt.ylabel('Weight (lbs) / BMI', fontsize=12, fontweight='bold')
     plt.title(f"{user.username}'s Fitness Progress", fontsize=14, fontweight='bold')
@@ -286,8 +312,14 @@ def log_workout():
     reps = int(request.form['reps'])
     weight_lbs = request.form.get('weight')
     weight_kg = round(float(weight_lbs) / 2.20462, 2) if weight_lbs else None
-    new_log = WorkoutLog(user_id=user_id, workout_type=workout_type, exercise=exercise,
-                         sets=sets, reps=reps, weight=weight_kg)
+    new_log = WorkoutLog(
+        user_id=user_id,
+        workout_type=workout_type,
+        exercise=exercise,
+        sets=sets,
+        reps=reps,
+        weight=weight_kg
+    )
     db.session.add(new_log)
     db.session.commit()
     flash('Workout logged successfully!', 'success')
@@ -336,22 +368,19 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# New route for Tutorials & Interactive Q&A
+# Tutorials, Multimedia, and Exercise routes
 @app.route('/tutorials')
 def tutorials():
     return render_template('tutorials.html')
 
-# New route for Multimedia Integration
 @app.route('/multimedia')
 def multimedia():
     return render_template('multimedia.html')
 
-# New route for Real-Time Exercise Analysis (if needed)
 @app.route('/exercise')
 def exercise():
     return render_template('exercise.html')
 
-# New route for Downloading User Data as JSON
 @app.route('/download_data')
 def download_data():
     if 'user_id' not in session:
@@ -384,7 +413,6 @@ def download_data():
     return Response(json_data, mimetype='application/json',
                     headers={"Content-Disposition": "attachment;filename=user_data.json"})
 
-# New route for Privacy Tab (Display user personal info and data download)
 @app.route('/privacy')
 def privacy():
     if 'user_id' not in session:
@@ -393,12 +421,13 @@ def privacy():
     user = User.query.get(session['user_id'])
     return render_template('privacy.html', user=user)
 
-# Chat API route for Fit Bot using the old ChatCompletion interface
-@app.route('/chat_api', methods=['POST'])
-def chat_api():
+# Proxy Endpoint for Fit Bot Chat (Backend Proxy)
+@app.route('/proxy_openai', methods=['POST'])
+def proxy_openai():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
-    user_message = request.json.get('message', '')
+    data = request.get_json()
+    user_message = data.get("message", "")
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -406,9 +435,10 @@ def chat_api():
                 {
                     "role": "system",
                     "content": (
-                        "You are Fit Bot, an AI fitness assistant. Provide helpful advice on workouts, nutrition, "
-                        "and overall fitness. Keep your responses short, efficient, and friendly, with a bit of personality. "
-                        "If the question is about exercise techniques, reference available tutorials briefly."
+                        "You are Fit Bot, an energetic, friendly, and concise AI fitness assistant. "
+                        "Provide short, efficient, and engaging advice on workouts, nutrition, and overall fitness. "
+                        "Keep your responses brief yet informative, and add a touch of personality and support. "
+                        "If the user's question is about exercise techniques or proper form, reference available tutorials briefly."
                     )
                 },
                 {
@@ -418,9 +448,9 @@ def chat_api():
             ]
         )
         ai_response = response.choices[0].message.content.strip()
-        return jsonify({"response": f"Fit Bot: {ai_response}"})
+        return jsonify({"response": ai_response})
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     with app.app_context():
