@@ -26,169 +26,198 @@
 
   /* Enhanced Fit Bot Chatbox Styling */
   #chat-icon {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #ff6600;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      padding: 15px;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 24px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ff6600;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
-
   #chat-window {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 320px;
-      max-height: 500px;
-      background: linear-gradient(135deg, #ffffff, #f9f9f9);
-      border-radius: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-      overflow: hidden;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 320px;
+    max-height: 500px;
+    background: linear-gradient(135deg, #ffffff, #f9f9f9);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
   }
   #chat-window.chat-open {
-      display: flex;
-      animation: fadeIn 0.3s ease-in-out;
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
   }
   @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
   #chat-header {
-      background-color: #ff6600;
-      color: #fff;
-      padding: 12px;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 16px;
+    background-color: #ff6600;
+    color: #fff;
+    padding: 12px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
   }
   #chat-header span {
-      display: flex;
-      align-items: center;
+    display: flex;
+    align-items: center;
   }
   #chat-header span i {
-      margin-right: 8px;
+    margin-right: 8px;
   }
   #chat-header .header-buttons {
-      display: flex;
-      align-items: center;
+    display: flex;
+    align-items: center;
   }
   #chat-header .header-buttons button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 10px;
-      cursor: pointer;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    margin-left: 10px;
+    cursor: pointer;
   }
-
   #chat-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      font-size: 0.95rem;
-      background: #f5f5f5;
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 0.95rem;
+    background: #f5f5f5;
   }
   .chat-bubble {
-      margin-bottom: 8px;
-      padding: 8px 12px;
-      border-radius: 15px;
-      max-width: 80%;
-      word-wrap: break-word;
-      animation: slideIn 0.3s ease;
-      box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
-      position: relative;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
   }
   @keyframes slideIn {
-      from { transform: translateX(10px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
   .user-message {
-      background-color: #e0e0e0;
-      align-self: flex-end;
-      margin-left: auto;
-      border-bottom-right-radius: 0;
+    background-color: #e0e0e0;
+    align-self: flex-end;
+    margin-left: auto;
+    border-bottom-right-radius: 0;
   }
   .ai-message {
-      background-color: #dff0d8;
-      align-self: flex-start;
-      margin-right: auto;
-      border-bottom-left-radius: 0;
+    background-color: #dff0d8;
+    align-self: flex-start;
+    margin-right: auto;
+    border-bottom-left-radius: 0;
   }
   .timestamp {
-      font-size: 0.7rem;
-      color: #999;
-      position: absolute;
-      bottom: -15px;
-      right: 10px;
+    font-size: 0.7rem;
+    color: #999;
+    position: absolute;
+    bottom: -15px;
+    right: 10px;
   }
-
   #chat-input {
-      display: flex;
-      padding: 10px;
-      background-color: #f8f9fa;
-      align-items: center;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
+    display: flex;
+    padding: 10px;
+    background-color: #f8f9fa;
+    align-items: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
   }
   #chat-input input {
-      flex: 1;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      outline: none;
+    flex: 1;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    outline: none;
   }
   #chat-input button {
-      background-color: #ff6600;
-      border: none;
-      border-radius: 20px;
-      color: #fff;
-      margin-left: 8px;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
+    background-color: #ff6600;
+    border: none;
+    border-radius: 20px;
+    color: #fff;
+    margin-left: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
   }
   #chat-input button:hover {
-      background-color: #e65c00;
+    background-color: #e65c00;
   }
-
   #typing-indicator {
-      font-style: italic;
-      color: #666;
-      margin-bottom: 5px;
+    font-style: italic;
+    color: #666;
+    margin-bottom: 5px;
   }
 </style>
 
 <div class="container mt-4">
   <div class="card p-4">
-    <h2 class="mb-3 text-center">
+    <h2 class="mb-4 text-center">
       <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
     </h2>
 
-    <!-- User Stats -->
-    <div class="row">
-      <div class="col-md-6">
-        <p><strong>BMI:</strong> {{ bmi }}</p>
-        <p><strong>Height:</strong> {{ user.height | height_to_feet_inches }}</p>
-        <p><strong>Current Weight:</strong> {{ (user.weight * 2.20462) | round(1) }} lbs</p>
-        <p><strong>Calorie Maintenance:</strong> {{ calorie_plans['maintenance'] }} kcal</p>
+    <!-- User Stats in 4-Column Card Layout -->
+    <div class="row row-cols-2 row-cols-md-4 g-3 text-center mb-4">
+      <!-- BMI Card -->
+      <div class="col">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">BMI</h5>
+            <p class="card-text display-6">{{ bmi }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Height Card -->
+      <div class="col">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">Height</h5>
+            <p class="card-text display-6">{{ user.height | height_to_feet_inches }}</p>
+          </div>
+        </div>
+      </div>
+      <!-- Current Weight Card -->
+      <div class="col">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">Current Weight</h5>
+            <p class="card-text display-6">
+              {{ (user.weight * 2.20462) | round(1) }} lbs
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Calorie Maintenance Card -->
+      <div class="col">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title">Calorie Maintenance</h5>
+            <p class="card-text display-6">
+              {{ calorie_plans['maintenance'] }} kcal
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Graph Section -->
+    <!-- Fitness Progress Graph -->
     <h3 class="mt-4">
       <i class="bi bi-bar-chart-line-fill"></i> Fitness Progress
     </h3>
@@ -265,7 +294,8 @@
           <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
           <td>
             <div class="dropdown">
-              <button class="btn btn-secondary btn-sm dropdown-toggle" type="button"
+              <button class="btn btn-secondary btn-sm dropdown-toggle"
+                      type="button"
                       id="dropdownMenuButton{{ workout.id }}"
                       data-bs-toggle="dropdown"
                       aria-expanded="false">
@@ -297,7 +327,9 @@
       <ul class="pagination justify-content-center">
         {% if pagination.has_prev %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">Previous</a>
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">
+              Previous
+            </a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -309,7 +341,9 @@
         </li>
         {% if pagination.has_next %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">Next</a>
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">
+              Next
+            </a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -322,12 +356,10 @@
 </div>
 
 <!-- ===================== Enhanced Fit Bot Chatbox Start ===================== -->
-<!-- Floating Chat Icon -->
 <button id="chat-icon">
   <i class="bi bi-chat-left-text-fill"></i>
 </button>
 
-<!-- Chat Window -->
 <div id="chat-window">
   <div id="chat-header">
       <span><i class="bi bi-robot"></i> Fit Bot</span>
@@ -344,25 +376,22 @@
 </div>
 
 <script>
-  // Toggle chat window
   function toggleChat() {
     document.getElementById('chat-window').classList.toggle('chat-open');
   }
   document.getElementById('chat-icon').addEventListener('click', toggleChat);
 
-  // Clear chat
   function clearChat() {
     document.getElementById('chat-messages').innerHTML = '';
   }
 
-  // Append message with timestamp
   function addMessage(text, cssClass) {
     const chatMessages = document.getElementById('chat-messages');
     const bubble = document.createElement('div');
     bubble.classList.add('chat-bubble', cssClass);
     bubble.textContent = text;
 
-    // Time in 12-hour format
+    // 12-hour time format
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -378,7 +407,7 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // Press Enter to send message
+  // Press Enter to send
   const userMessageInput = document.getElementById('userMessage');
   userMessageInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -400,7 +429,6 @@
     document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
 
     try {
-      // Calls the new proxy endpoint
       const response = await fetch('{{ url_for("proxy_openai") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
