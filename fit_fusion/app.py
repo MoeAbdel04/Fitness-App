@@ -57,10 +57,16 @@ def calculate_bmi(weight, height):
     return round(weight / (height ** 2), 2)
 
 def calculate_tdee(user):
+    # Convert meters → centimeters
+    height_cm = user.height * 100.0
+
+    # Mifflin–St Jeor formula
     if user.gender.lower() == 'male':
-        bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) + 5
+        bmr = (10 * user.weight) + (6.25 * height_cm) - (5 * user.age) + 5
     else:
-        bmr = (10 * user.weight) + (6.25 * user.height) - (5 * user.age) - 161
+        bmr = (10 * user.weight) + (6.25 * height_cm) - (5 * user.age) - 161
+
+    # Multiply by an activity factor
     activity_factors = {
         'sedentary': 1.2,
         'light': 1.375,
@@ -68,7 +74,10 @@ def calculate_tdee(user):
         'active': 1.725,
         'very_active': 1.9
     }
-    return round(bmr * activity_factors.get(user.activity_level, 1.2))
+
+    tdee = bmr * activity_factors.get(user.activity_level, 1.2)
+    return round(tdee)
+
 
 def height_to_feet_inches(meters):
     total_inches = round(meters / 0.0254)
