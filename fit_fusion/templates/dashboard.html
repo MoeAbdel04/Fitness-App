@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Custom Styles for Dashboard -->
 <style>
-  /* Custom Pagination Colors to match orange theme */
+  /* Pagination Colors */
   .pagination .page-item .page-link {
     color: #ff6600;
     border: 1px solid #ff6600;
@@ -24,7 +25,7 @@
     background-color: #f8f9fa;
   }
 
-  /* Enhanced Fit Bot Chatbox Styling */
+  /* Fit Bot Chatbox Styling */
   #chat-icon {
     position: fixed;
     bottom: 20px;
@@ -37,7 +38,7 @@
     cursor: pointer;
     z-index: 1000;
     font-size: 24px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
   #chat-window {
     position: fixed;
@@ -47,7 +48,7 @@
     max-height: 500px;
     background: linear-gradient(135deg, #ffffff, #f9f9f9);
     border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     display: none;
     flex-direction: column;
     z-index: 1000;
@@ -173,9 +174,9 @@
       <i class="bi bi-person-lines-fill"></i> Welcome, {{ user.username }}
     </h2>
 
-    <!-- User Stats in 4-Column Card Layout -->
+    <!-- Stats Section (4-Column Card Layout) -->
     <div class="row row-cols-2 row-cols-md-4 g-3 text-center mb-4">
-      <!-- BMI Card -->
+      <!-- BMI -->
       <div class="col">
         <div class="card shadow-sm h-100">
           <div class="card-body">
@@ -184,7 +185,7 @@
           </div>
         </div>
       </div>
-      <!-- Height Card -->
+      <!-- Height in Feet & Inches -->
       <div class="col">
         <div class="card shadow-sm h-100">
           <div class="card-body">
@@ -193,25 +194,21 @@
           </div>
         </div>
       </div>
-      <!-- Current Weight Card -->
+      <!-- Current Weight -->
       <div class="col">
         <div class="card shadow-sm h-100">
           <div class="card-body">
             <h5 class="card-title">Current Weight</h5>
-            <p class="card-text display-6">
-              {{ (user.weight * 2.20462) | round(1) }} lbs
-            </p>
+            <p class="card-text display-6">{{ (user.weight * 2.20462) | round(1) }} lbs</p>
           </div>
         </div>
       </div>
-      <!-- Calorie Maintenance Card -->
+      <!-- Calorie Maintenance -->
       <div class="col">
         <div class="card shadow-sm h-100">
           <div class="card-body">
             <h5 class="card-title">Calorie Maintenance</h5>
-            <p class="card-text display-6">
-              {{ calorie_plans['maintenance'] }} kcal
-            </p>
+            <p class="card-text display-6">{{ calorie_plans['maintenance'] }} kcal</p>
           </div>
         </div>
       </div>
@@ -285,32 +282,34 @@
       </thead>
       <tbody>
         {% for workout in workouts %}
-        <tr>
+        <tr id="workoutRow{{ workout.id }}">
           <td>{{ workout.date.strftime('%Y-%m-%d') }}</td>
-          <td>{{ workout.workout_type }}</td>
-          <td>{{ workout.exercise }}</td>
-          <td>{{ workout.sets }}</td>
-          <td>{{ workout.reps }}</td>
-          <td>{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
+          <td class="workout-type">{{ workout.workout_type }}</td>
+          <td class="exercise">{{ workout.exercise }}</td>
+          <td class="sets">{{ workout.sets }}</td>
+          <td class="reps">{{ workout.reps }}</td>
+          <td class="weight">{{ (workout.weight * 2.20462) | round(1) if workout.weight else '-' }}</td>
           <td>
             <div class="dropdown">
-              <button class="btn btn-secondary btn-sm dropdown-toggle"
-                      type="button"
-                      id="dropdownMenuButton{{ workout.id }}"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
+              <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton{{ workout.id }}" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-three-dots"></i>
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ workout.id }}">
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('edit_workout', workout_id=workout.id) }}">
+                  <a class="dropdown-item edit-workout" 
+                     href="#"
+                     data-workout-id="{{ workout.id }}"
+                     data-workout-type="{{ workout.workout_type }}"
+                     data-exercise="{{ workout.exercise }}"
+                     data-sets="{{ workout.sets }}"
+                     data-reps="{{ workout.reps }}"
+                     data-weight="{{ (workout.weight * 2.20462) | round(1) if workout.weight else '' }}"
+                  >
                     Edit
                   </a>
                 </li>
                 <li>
-                  <form action="{{ url_for('delete_workout', workout_id=workout.id) }}"
-                        method="POST"
-                        onsubmit="return confirm('Are you sure you want to delete this workout?');">
+                  <form action="{{ url_for('delete_workout', workout_id=workout.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this workout?');">
                     <button type="submit" class="dropdown-item">Delete</button>
                   </form>
                 </li>
@@ -327,9 +326,7 @@
       <ul class="pagination justify-content-center">
         {% if pagination.has_prev %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">
-              Previous
-            </a>
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.prev_num) }}">Previous</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -341,9 +338,7 @@
         </li>
         {% if pagination.has_next %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">
-              Next
-            </a>
+            <a class="page-link" href="{{ url_for('dashboard', page=pagination.next_num) }}">Next</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -355,43 +350,86 @@
   </div>
 </div>
 
-<!-- ===================== Enhanced Fit Bot Chatbox Start ===================== -->
+<!-- Edit Workout Modal -->
+<div class="modal fade" id="editWorkoutModal" tabindex="-1" aria-labelledby="editWorkoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editWorkoutModalLabel">Edit Workout</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editWorkoutForm">
+          <input type="hidden" id="editWorkoutId" name="workout_id">
+          <div class="mb-3">
+            <label for="editWorkoutType" class="form-label">Workout Type</label>
+            <select class="form-select" id="editWorkoutType" name="workout_type">
+              <option value="Cardio">Cardio</option>
+              <option value="Weight Training">Weight Training</option>
+              <option value="Strength Training">Strength Training</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editExercise" class="form-label">Exercise</label>
+            <input type="text" class="form-control" id="editExercise" name="exercise" required>
+          </div>
+          <div class="mb-3">
+            <label for="editSets" class="form-label">Sets</label>
+            <input type="number" class="form-control" id="editSets" name="sets" required>
+          </div>
+          <div class="mb-3">
+            <label for="editReps" class="form-label">Reps</label>
+            <input type="number" class="form-control" id="editReps" name="reps" required>
+          </div>
+          <div class="mb-3">
+            <label for="editWeight" class="form-label">Current Weight (lbs)</label>
+            <input type="number" step="0.1" class="form-control" id="editWeight" name="weight">
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fit Bot Chatbox -->
 <button id="chat-icon">
   <i class="bi bi-chat-left-text-fill"></i>
 </button>
-
 <div id="chat-window">
   <div id="chat-header">
-      <span><i class="bi bi-robot"></i> Fit Bot</span>
-      <div class="header-buttons">
-          <button onclick="clearChat()"><i class="bi bi-trash"></i></button>
-          <button onclick="toggleChat()">&times;</button>
-      </div>
+    <span><i class="bi bi-robot"></i> Fit Bot</span>
+    <div class="header-buttons">
+      <button onclick="clearChat()"><i class="bi bi-trash"></i></button>
+      <button onclick="toggleChat()">&times;</button>
+    </div>
   </div>
   <div id="chat-messages" class="d-flex flex-column"></div>
   <div id="chat-input">
-      <input type="text" id="userMessage" placeholder="Type a message..." />
-      <button onclick="sendMessage()">Send</button>
+    <input type="text" id="userMessage" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
   </div>
 </div>
 
 <script>
+  // Toggle Chat Window
   function toggleChat() {
     document.getElementById('chat-window').classList.toggle('chat-open');
   }
   document.getElementById('chat-icon').addEventListener('click', toggleChat);
 
+  // Clear Chat Messages
   function clearChat() {
     document.getElementById('chat-messages').innerHTML = '';
   }
 
+  // Append a Chat Message with Timestamp
   function addMessage(text, cssClass) {
     const chatMessages = document.getElementById('chat-messages');
     const bubble = document.createElement('div');
     bubble.classList.add('chat-bubble', cssClass);
     bubble.textContent = text;
 
-    // 12-hour time format
     const now = new Date();
     const timeString = now.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -407,7 +445,7 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // Press Enter to send
+  // Send Message on Enter Key
   const userMessageInput = document.getElementById('userMessage');
   userMessageInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -416,6 +454,7 @@
     }
   });
 
+  // Send Chat Message via Proxy
   async function sendMessage() {
     const userMessage = userMessageInput.value.trim();
     if (!userMessage) return;
@@ -446,6 +485,62 @@
       addMessage('Error connecting to Fit Bot.', 'ai-message');
     }
   }
+
+  // Edit Workout Modal Logic
+  document.querySelectorAll('.edit-workout').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      const workoutId = this.getAttribute('data-workout-id');
+      const workoutType = this.getAttribute('data-workout-type');
+      const exercise = this.getAttribute('data-exercise');
+      const sets = this.getAttribute('data-sets');
+      const reps = this.getAttribute('data-reps');
+      const weight = this.getAttribute('data-weight');
+
+      document.getElementById('editWorkoutId').value = workoutId;
+      document.getElementById('editWorkoutType').value = workoutType;
+      document.getElementById('editExercise').value = exercise;
+      document.getElementById('editSets').value = sets;
+      document.getElementById('editReps').value = reps;
+      document.getElementById('editWeight').value = weight;
+
+      const editModal = new bootstrap.Modal(document.getElementById('editWorkoutModal'));
+      editModal.show();
+    });
+  });
+
+  // Handle Modal Form Submission via AJAX
+  document.getElementById('editWorkoutForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const workoutId = document.getElementById('editWorkoutId').value;
+    const workoutType = document.getElementById('editWorkoutType').value;
+    const exercise = document.getElementById('editExercise').value;
+    const sets = document.getElementById('editSets').value;
+    const reps = document.getElementById('editReps').value;
+    const weight = document.getElementById('editWeight').value;
+
+    try {
+      const response = await fetch('{{ url_for("edit_workout_ajax") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workout_id: workoutId,
+          workout_type: workoutType,
+          exercise: exercise,
+          sets: sets,
+          reps: reps,
+          weight: weight
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Error: ' + data.error);
+      }
+    } catch (err) {
+      alert('Error connecting to server.');
+    }
+  });
 </script>
-<!-- ===================== Enhanced Fit Bot Chatbox End ===================== -->
 {% endblock %}

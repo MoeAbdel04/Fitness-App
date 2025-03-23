@@ -4,15 +4,8 @@ load_dotenv()  # Loads environment variables from .env file
 
 import openai  # Using openai==0.28.1
 from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash,
-    jsonify,
-    Response
+    Flask, render_template, request, redirect, url_for,
+    session, flash, jsonify, Response
 )
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -48,14 +41,16 @@ class WorkoutLog(db.Model):
     exercise = db.Column(db.String(100), nullable=False)
     sets = db.Column(db.Integer, nullable=False)
     reps = db.Column(db.Integer, nullable=False)
-    weight = db.Column(db.Float, nullable=True)  # Stored in kg
+    weight = db.Column(db.Float, nullable=True)  # in kg
     date = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('workouts', lazy=True))
 
 # Utility Functions
-def calculate_bmi(weight, height):
-    return round(weight / (height ** 2), 2)
+def calculate_bmi(weight, height_cm):
+    height_m = height_cm / 100.0
+    return round(weight / (height_m ** 2), 2)
 
+# TDEE calculation remains exactly as provided:
 def calculate_tdee(user):
     # Convert meters → centimeters
     height_cm = user.height * 100.0
@@ -78,18 +73,16 @@ def calculate_tdee(user):
     tdee = bmr * activity_factors.get(user.activity_level, 1.2)
     return round(tdee)
 
-
+# Jinja filter to display height in feet/inches for display
 def height_to_feet_inches(meters):
     total_inches = round(meters / 0.0254)
     feet = total_inches // 12
     inches = total_inches % 12
     return f"{feet}' {inches}\""
 
-# Register custom filter for templates
 app.jinja_env.filters['height_to_feet_inches'] = height_to_feet_inches
 
 # Routes
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -97,29 +90,20 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
-        age = int(request.form['age'])
-        gender = request.form['gender']
-        feet = int(request.form['feet'])
-        inches = int(request.form['inches'])
-        height = round(((feet * 12) + inches) * 0.0254, 2)
-        weight_lbs = float(request.form['weight_lbs'])
-        weight = round(weight_lbs * 0.453592, 2)
+        username  = request.form['username']
+        email     = request.form['email']
+        password  = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
+        age       = int(request.form['age'])
+        gender    = request.form['gender']
+        # Height in meters (user enters in meters)
+        height    = float(request.form['height'])
+        weight_lbs= float(request.form['weight_lbs'])
+        weight    = round(weight_lbs * 0.453592, 2)
         activity_level = request.form['activity_level']
         workout_preference = request.form.get('workout_preference')
-        new_user = User(
-            username=username,
-            email=email,
-            password=password,
-            age=age,
-            gender=gender,
-            height=height,
-            weight=weight,
-            activity_level=activity_level,
-            workout_preference=workout_preference
-        )
+        new_user = User(username=username, email=email, password=password, age=age,
+                        gender=gender, height=height, weight=weight,
+                        activity_level=activity_level, workout_preference=workout_preference)
         db.session.add(new_user)
         db.session.commit()
         flash('Account created successfully! Please log in.', 'success')
@@ -129,7 +113,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        email    = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
@@ -141,7 +125,6 @@ def login():
             flash('Invalid credentials, please try again.', 'danger')
     return render_template('login.html')
 
-# Forgot Password (On-site, no email)
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -156,7 +139,6 @@ def forgot_password():
             return redirect(url_for('forgot_password'))
     return render_template('forgot_password.html')
 
-# Reset Password (On-site)
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
     if 'reset_email' not in session:
@@ -177,7 +159,7 @@ def reset_password():
             return redirect(url_for('forgot_password'))
     return render_template('reset_password.html')
 
-# Edit Workout Route
+# Standard Edit Workout Route (separate page, remains available)
 @app.route('/edit_workout/<int:workout_id>', methods=['GET', 'POST'])
 def edit_workout(workout_id):
     if 'user_id' not in session:
@@ -199,7 +181,26 @@ def edit_workout(workout_id):
         return redirect(url_for('dashboard'))
     return render_template('edit_workout.html', workout=workout)
 
-# Delete Workout Route
+# New AJAX Edit Workout Route for inline editing on the dashboard
+@app.route('/edit_workout_ajax', methods=['POST'])
+def edit_workout_ajax():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json()
+    workout_id = data.get("workout_id")
+    workout = WorkoutLog.query.get_or_404(workout_id)
+    if workout.user_id != session['user_id']:
+        return jsonify({"error": "Unauthorized action."}), 403
+    workout.workout_type = data.get("workout_type", workout.workout_type)
+    workout.exercise = data.get("exercise", workout.exercise)
+    workout.sets = int(data.get("sets", workout.sets))
+    workout.reps = int(data.get("reps", workout.reps))
+    weight = data.get("weight")
+    if weight:
+        workout.weight = round(float(weight) / 2.20462, 2)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Workout updated successfully!"})
+
 @app.route('/delete_workout/<int:workout_id>', methods=['POST'])
 def delete_workout(workout_id):
     if 'user_id' not in session:
@@ -220,7 +221,8 @@ def dashboard():
         flash('Please log in first.', 'warning')
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    bmi = calculate_bmi(user.weight, user.height)
+    height_cm = user.height * 100.0
+    bmi = calculate_bmi(user.weight, height_cm)
     tdee = calculate_tdee(user)
     calorie_plans = {
         'maintenance': tdee,
@@ -229,14 +231,16 @@ def dashboard():
         'extreme_deficit': tdee - 750
     }
     page = request.args.get('page', 1, type=int)
-    pagination = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).paginate(page=page, per_page=10)
+    pagination = WorkoutLog.query.filter_by(user_id=user.id)\
+                        .order_by(WorkoutLog.date.asc())\
+                        .paginate(page=page, per_page=10)
     workouts = pagination.items
-    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
-    weights = [workout.weight for workout in workouts if workout.weight]
-    bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
+    dates = [w.date.strftime('%Y-%m-%d') for w in workouts if w.weight]
+    weights = [w.weight for w in workouts if w.weight]
+    bmi_values = [calculate_bmi(w, height_cm) for w in weights]
     if dates:
         plt.figure(figsize=(8, 5))
-        plt.plot(dates, [w * 2.20462 for w in weights],
+        plt.plot(dates, [wt * 2.20462 for wt in weights],
                  marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
         plt.plot(dates, bmi_values,
                  marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
@@ -284,15 +288,17 @@ def workout_chart():
         flash('Please log in to view progress.', 'warning')
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    workouts = WorkoutLog.query.filter_by(user_id=user.id).order_by(WorkoutLog.date.asc()).all()
-    dates = [workout.date.strftime('%Y-%m-%d') for workout in workouts if workout.weight]
-    weights = [workout.weight for workout in workouts if workout.weight]
-    bmi_values = [calculate_bmi(weight, user.height) for weight in weights]
+    workouts = WorkoutLog.query.filter_by(user_id=user.id)\
+                .order_by(WorkoutLog.date.asc()).all()
+    dates = [w.date.strftime('%Y-%m-%d') for w in workouts if w.weight]
+    weights = [w.weight for w in workouts if w.weight]
+    height_cm = user.height * 100.0
+    bmi_values = [calculate_bmi(w, height_cm) for w in weights]
     if not dates:
         flash('No valid weight data available to generate the graph.', 'warning')
         return redirect(url_for('dashboard'))
     plt.figure(figsize=(8, 5))
-    plt.plot(dates, [w * 2.20462 for w in weights],
+    plt.plot(dates, [wt * 2.20462 for wt in weights],
              marker='s', linestyle='-', color='brown', markersize=6, linewidth=2, label='Weight (lbs)')
     plt.plot(dates, bmi_values,
              marker='s', linestyle='--', color='red', markersize=6, linewidth=2, label='BMI')
@@ -337,39 +343,53 @@ def log_workout():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if 'user_id' not in session:
-        flash('Please log in to view profile.', 'warning')
+        flash('Please log in.', 'warning')
         return redirect(url_for('login'))
+
     user = User.query.get(session['user_id'])
+
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        age = int(request.form['age'])
-        gender = request.form['gender']
-        feet = int(request.form['feet'])
-        inches = int(request.form['inches'])
-        height = round(((feet * 12) + inches) * 0.0254, 2)
+        # 1. Convert the submitted feet/inches → meters
+        feet = float(request.form['feet'])
+        inches = float(request.form['inches'])
+        new_height_meters = round(((feet * 12) + inches) * 0.0254, 2)
+        user.height = new_height_meters
+
+        # 2. Convert the submitted weight (lbs) → kg
         weight_lbs = float(request.form['weight_lbs'])
-        weight = round(weight_lbs * 0.453592, 2)
-        activity_level = request.form['activity_level']
-        workout_preference = request.form.get('workout_preference')
-        goal = request.form.get('goal')
-        user.username = username
-        user.email = email
-        user.age = age
-        user.gender = gender
-        user.height = height
-        user.weight = weight
-        user.activity_level = activity_level
-        user.workout_preference = workout_preference
-        user.goal = goal
+        user.weight = round(weight_lbs * 0.453592, 2)
+
+        # 3. Update other fields
+        user.username = request.form['username']
+        user.email = request.form['email']
+        user.age = int(request.form['age'])
+        user.gender = request.form['gender']
+        user.activity_level = request.form['activity_level']
+        user.workout_preference = request.form.get('workout_preference')
+        user.goal = request.form.get('goal')
+
         db.session.commit()
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))
-    total_inches = round(user.height / 0.0254)
-    feet = total_inches // 12
-    inches = total_inches % 12
-    weight_lbs = round(user.weight * 2.20462, 1)
-    return render_template('profile.html', user=user, feet=feet, inches=inches, weight_lbs=weight_lbs)
+    else:
+        # =========== DISPLAY (GET) ===========
+
+        # Convert stored meters → feet/inches
+        total_inches = int(round(user.height / 0.0254))
+        feet_value = total_inches // 12
+        inches_value = total_inches % 12
+
+        # Convert stored kg → lbs for display
+        weight_lbs = round(user.weight / 0.453592, 1)
+
+        return render_template(
+            'profile.html',
+            user=user,
+            feet_value=feet_value,
+            inches_value=inches_value,
+            weight_lbs=weight_lbs
+        )
+
 
 @app.route('/logout')
 def logout():
@@ -377,7 +397,6 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
 
-# Tutorials, Multimedia, and Exercise routes
 @app.route('/tutorials')
 def tutorials():
     return render_template('tutorials.html')
@@ -422,15 +441,15 @@ def download_data():
     return Response(json_data, mimetype='application/json',
                     headers={"Content-Disposition": "attachment;filename=user_data.json"})
 
-@app.route('/privacy')
-def privacy():
-    if 'user_id' not in session:
-        flash('Please log in to view privacy information.', 'warning')
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    return render_template('privacy.html', user=user)
+#@app.route('/privacy')
+#def privacy():
+    #if 'user_id' not in session:
+        #flash('Please log in to view privacy information.', 'warning')
+        #return redirect(url_for('login'))
+    #user = User.query.get(session['user_id'])
+    #return render_template('privacy.html', user=user)
 
-# Proxy Endpoint for Fit Bot Chat (Backend Proxy)
+# Proxy Endpoint for Fit Bot Chat
 @app.route('/proxy_openai', methods=['POST'])
 def proxy_openai():
     if 'user_id' not in session:
