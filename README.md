@@ -52,5 +52,13 @@ Fit Fusion is a Flask-based fitness tracking application that allows users to:
 
 2. **Create and activate a virtual environment** (optional but recommended):
    ```bash
-   python -m venv venv
+   python -m venv venv       # first time
+   cd fit_fusion/            # second and later times
    source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. **Start Flask**
+   ```bash
+   flask run --debug
+   ```
+
+4. **Open In Browser** -- bottom right hand corner of CodeSpace, or "ports" tab.
