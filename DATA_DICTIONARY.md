@@ -75,4 +75,3 @@ This document describes the database schema for the Fit Fusion application.
 
 ---
 
-Save this file alongside your code to keep everyone on the same page about your schema!
