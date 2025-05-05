@@ -2,305 +2,63 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">
-    <i class="bi bi-camera-video"></i> Multimedia
-  </h2>
+  <h2 class="mb-4 text-center">Multimedia Tutorials</h2>
+  <p class="text-center text-muted mb-5">
+    Learn proper form and technique with these curated exercise videos.
+  </p>
 
-  <!-- Example Video Card 1 -->
-  <div class="card mb-4 p-3">
-    <h4 class="card-title">Proper Squat Form</h4>
-    <div class="ratio ratio-16x9 mb-3">
-      <!-- Replace this YouTube link with your desired video -->
-      <iframe 
-        src="https://www.youtube.com/embed/my0tLDaWyDU" 
-        title="Squat University - Proper Squat Form" 
-        allowfullscreen>
-      </iframe>
-    </div>
-    <p class="card-text">
-      Learn the fundamentals of a proper squat, including stance, depth, and posture to avoid injury and maximize performance.
-    </p>
-  </div>
-  
-  <!-- Example Video Card 2 -->
-  <div class="card mb-4 p-3">
-    <h4 class="card-title">Push-Up Variations</h4>
-    <div class="ratio ratio-16x9 mb-3">
-      <!-- Replace this link with another relevant video -->
-      <iframe 
-        src="https://www.youtube.com/embed/eFOSh8vpd6I" 
-        title="Push-Up Variations" 
-        allowfullscreen>
-      </iframe>
-    </div>
-    <p class="card-text">
-      Explore different push-up variations to target specific muscle groups and challenge your strength. 
-      Keep your form tight and core engaged!
-    </p>
-  </div>
-  
-  <!-- Example Video Card 3 -->
-  <div class="card mb-4 p-3">
-    <h4 class="card-title">Post-Workout Recovery Tips</h4>
-    <div class="ratio ratio-16x9 mb-3">
-      <!-- Another placeholder video; update as needed -->
-      <iframe 
-        src="https://www.youtube.com/embed/Z2qC31Y8gDM" 
-        title="Post-Workout Recovery" 
-        allowfullscreen>
-      </iframe>
-    </div>
-    <p class="card-text">
-      Recovery is crucial for progress. This video covers foam rolling, stretching, and other techniques 
-      to help your muscles bounce back after an intense workout.
-    </p>
-  </div>
-
-  <!-- Add more videos or other multimedia content as desired -->
-</div>
-
-<!-- ===================== Enhanced Fit Bot Chatbox Start ===================== -->
-<style>
-  /* Enhanced Chatbox Styling (same as dashboard) */
-  #chat-icon {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #ff6600;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      padding: 15px;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 24px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  #chat-window {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 320px;
-      max-height: 500px;
-      background: linear-gradient(135deg, #ffffff, #f9f9f9);
-      border-radius: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-      display: none;
-      flex-direction: column;
-      z-index: 1000;
-      overflow: hidden;
-  }
-  #chat-window.chat-open {
-      display: flex;
-      animation: fadeIn 0.3s ease-in-out;
-  }
-  @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-  }
-  #chat-header {
-      background-color: #ff6600;
-      color: #fff;
-      padding: 12px;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 16px;
-  }
-  #chat-header span {
-      display: flex;
-      align-items: center;
-  }
-  #chat-header span i {
-      margin-right: 8px;
-  }
-  #chat-header .header-buttons {
-      display: flex;
-      align-items: center;
-  }
-  #chat-header .header-buttons button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      margin-left: 10px;
-      cursor: pointer;
-  }
-  #chat-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      font-size: 0.95rem;
-      background: #f5f5f5;
-  }
-  .chat-bubble {
-      margin-bottom: 8px;
-      padding: 8px 12px;
-      border-radius: 15px;
-      max-width: 80%;
-      word-wrap: break-word;
-      animation: slideIn 0.3s ease;
-      box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-  }
-  @keyframes slideIn {
-      from { transform: translateX(10px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-  }
-  .user-message {
-      background-color: #e0e0e0;
-      align-self: flex-end;
-      margin-left: auto;
-      border-bottom-right-radius: 0;
-  }
-  .ai-message {
-      background-color: #dff0d8;
-      align-self: flex-start;
-      margin-right: auto;
-      border-bottom-left-radius: 0;
-  }
-  .timestamp {
-      font-size: 0.7rem;
-      color: #999;
-      position: absolute;
-      bottom: -15px;
-      right: 10px;
-  }
-  #chat-input {
-      display: flex;
-      padding: 10px;
-      background-color: #f8f9fa;
-      align-items: center;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-  }
-  #chat-input input {
-      flex: 1;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      padding: 8px 12px;
-      outline: none;
-  }
-  #chat-input button {
-      background-color: #ff6600;
-      border: none;
-      border-radius: 20px;
-      color: #fff;
-      margin-left: 8px;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-  }
-  #chat-input button:hover {
-      background-color: #e65c00;
-  }
-  #typing-indicator {
-      font-style: italic;
-      color: #666;
-      margin-bottom: 5px;
-  }
-</style>
-
-<!-- Floating Chat Icon -->
-<button id="chat-icon">
-  <i class="bi bi-chat-left-text-fill"></i>
-</button>
-
-<!-- Chat Window -->
-<div id="chat-window">
-  <div id="chat-header">
-      <span><i class="bi bi-robot"></i> Fit Bot</span>
-      <div class="header-buttons">
-          <button onclick="clearChat()"><i class="bi bi-trash"></i></button>
-          <button onclick="toggleChat()">&times;</button>
+  <div class="row gy-4">
+    <!-- Barbell Squat Tutorial -->
+    <div class="col-12 col-md-6">
+      <div class="ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/my0tLDaWyDU" 
+          title="Barbell Squat Tutorial by Squat University" 
+          allowfullscreen>
+        </iframe>
       </div>
-  </div>
-  <div id="chat-messages" class="d-flex flex-column"></div>
-  <div id="chat-input">
-      <input type="text" id="userMessage" placeholder="Type a message..." />
-      <button onclick="sendMessage()">Send</button>
+      <h5 class="mt-2">Barbell Squat Tutorial</h5>
+      <p class="text-muted">Learn correct squat mechanics from Squat University.</p>
+    </div>
+
+    <!-- Push-Up Mastery -->
+    <div class="col-12 col-md-6">
+      <div class="ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/IODxDxX7oi4" 
+          title="Perfect Push-Up Tutorial" 
+          allowfullscreen>
+        </iframe>
+      </div>
+      <h5 class="mt-2">Perfect Push-Up Tutorial</h5>
+      <p class="text-muted">Step-by-step guide to mastering the push-up.</p>
+    </div>
+
+    <!-- Deadlift Fundamentals -->
+    <div class="col-12 col-md-6">
+      <div class="ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/op9kVnSso6Q" 
+          title="Deadlift Technique Basics" 
+          allowfullscreen>
+        </iframe>
+      </div>
+      <h5 class="mt-2">Deadlift Technique Basics</h5>
+      <p class="text-muted">Proper deadlift form to protect your back and maximize strength.</p>
+    </div>
+
+    <!-- Core Plank Variation -->
+    <div class="col-12 col-md-6">
+      <div class="ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/pSHjTRCQxIw" 
+          title="How to Plank Correctly" 
+          allowfullscreen>
+        </iframe>
+      </div>
+      <h5 class="mt-2">How to Plank Correctly</h5>
+      <p class="text-muted">Learn proper plank technique for a strong, stable core.</p>
+    </div>
   </div>
 </div>
-
-<script>
-  // Toggle the chat window
-  function toggleChat() {
-    document.getElementById('chat-window').classList.toggle('chat-open');
-  }
-  document.getElementById('chat-icon').addEventListener('click', toggleChat);
-
-  // Clear the chat
-  function clearChat() {
-    document.getElementById('chat-messages').innerHTML = '';
-  }
-
-  // Append message with timestamp
-  function addMessage(text, cssClass) {
-    const chatMessages = document.getElementById('chat-messages');
-    const bubble = document.createElement('div');
-    bubble.classList.add('chat-bubble', cssClass);
-    bubble.textContent = text;
-
-    // Time in 12-hour format
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    });
-    const timestamp = document.createElement('div');
-    timestamp.classList.add('timestamp');
-    timestamp.textContent = timeString;
-    bubble.appendChild(timestamp);
-
-    chatMessages.appendChild(bubble);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  // Press Enter to send
-  const userMessageInput = document.getElementById('userMessage');
-  userMessageInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-
-  // Send message to proxy endpoint
-  async function sendMessage() {
-    const userMessage = userMessageInput.value.trim();
-    if (!userMessage) return;
-    addMessage(userMessage, 'user-message');
-    userMessageInput.value = '';
-
-    const typingIndicator = document.createElement('div');
-    typingIndicator.id = "typing-indicator";
-    typingIndicator.textContent = "Fit Bot is typing...";
-    document.getElementById('chat-messages').appendChild(typingIndicator);
-    document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
-
-    try {
-      // Use the new proxy endpoint
-      const response = await fetch('{{ url_for("proxy_openai") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
-      });
-      const data = await response.json();
-      typingIndicator.remove();
-      if (data.response) {
-        addMessage(data.response, 'ai-message');
-      } else if (data.error) {
-        addMessage(`Error: ${data.error}`, 'ai-message');
-      }
-    } catch (err) {
-      typingIndicator.remove();
-      addMessage('Error connecting to Fit Bot.', 'ai-message');
-    }
-  }
-</script>
-<!-- ===================== Enhanced Fit Bot Chatbox End ===================== -->
 {% endblock %}
