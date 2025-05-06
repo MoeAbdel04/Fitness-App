@@ -39,7 +39,7 @@ This document describes the database schema for the Fit Fusion application.
 
 ## Table: `WorkoutPlan`
 
-> **Note**: Only present if you’ve implemented the “save workout plan” feature.
+> 
 
 | Column Name    | Data Type   | Constraints                               | Description                                                      |
 |----------------|-------------|-------------------------------------------|------------------------------------------------------------------|
