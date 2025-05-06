@@ -36,24 +36,25 @@
     +─────────────────+
 
   Inside the App:
-  ┌────────────────────────────────────────────┐
-  │ • SQLAlchemy ORM ↔ Primary DB (Postgres)  │  ← Persists users, logs, plans
-  │ • Sessions → Redis                        │  ← Stores login sessions & cache
-  │ • Celery + Redis Broker                   │  ← Background tasks: emails, reminders
-  │ • Sentry                                  │  ← Error tracking
-  │ • Prometheus / Grafana                    │  ← Metrics & dashboards
-  └────────────────────────────────────────────┘
-             │                  │                   │
-      (G)    │                  │                   │  (H)
-─────────────▼──────────  ┌─────▼──────┐   ┌────────▼────────┐
-│   Primary DB (Postgres) │  Redis     │   │  AWS S3 (or GCS) │
-│ • User data & logs      │  Cache &   │   │ • Exports &      │
-│ • Migrations & backups  │  Sessions  │   │   Media storage  │
-└─────────────────────────┘  └──────────┘   └─────────────────┘
-             │                                    
-             │ (I) Email / Notifications           
-             ▼                                    
-   ┌─────────────────────────┐                       
-   │  Email Service          │  ← Sends signup confirmations, resets, reminders  
-   │ (SMTP / SendGrid API)   │                       
-   └─────────────────────────┘                       
+  ┌─────────────────────────────────────────────┐
+  │ • SQLAlchemy ORM ↔ Primary DB (Postgres)   │ ← Persists users, workout logs & plans
+  │ • Sessions         ↔ Redis                 │ ← Stores login sessions & powers Celery
+  │ • Celery + Broker  (Redis)                 │ ← Runs background tasks (emails, reminders)
+  │ • Sentry                                   │ ← Real-time error tracking
+  │ • Prometheus / Grafana                     │ ← Metrics collection & dashboards
+  └─────────────────────────────────────────────┘
+             │                   │                   │
+             │                   │                   │
+      ┌──────▼──────┐     ┌──────▼──────┐     ┌──────▼──────┐
+      │  Primary    │     │   Redis      │     │   AWS S3     │
+      │    DB       │     │ (Cache &     │     │ (Media &     │
+      │ (Postgres)  │     │  Broker)     │     │  Exports)    │
+      └─────────────┘     └─────────────┘     └─────────────┘
+             │                                     │
+             │                                     │
+             ▼                                     ▼
+      ┌────────────────────────────────────────────────┐
+      │                Email Service                  │
+      │              (SMTP / SendGrid)                │ ← Sends signup confirmations, resets, reminders
+      └────────────────────────────────────────────────┘
+         
