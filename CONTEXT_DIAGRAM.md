@@ -1,22 +1,22 @@
-                                              ┌───────────────────────┐   ← Developer & CI: Push code, run tests, build & deploy pipeline
-                                              │   Developer / CI      │
+                                              ┌───────────────────────┐
+                                              │   Developer / CI      │ ← Push code, run tests, build & deploy pipeline
                                               │ (GitHub + Actions)    │
                                               └────────────┬──────────┘
                                                            │
                                                            ▼  (1) Push & Build
-                                        ┌─────────────────────────────────────┐   ← CI/CD: Lint, tests, security scans, Docker image build
-                                        │    CI/CD Pipeline (Docker Build)    │
+                                        ┌─────────────────────────────────────┐
+                                        │    CI/CD Pipeline (Docker Build)    │ ← Lint, tests, security scans, Docker image build
                                         └─────────────────────────────────────┘
                                                            │
                                                            ▼  (2) Deploy
-                               ┌────────────────────────────────────────────────┐   ← Hosting: Runs your container, scales app
-                               │   Hosting Platform / Orchestration           │
+                               ┌────────────────────────────────────────────────┐
+                               │   Hosting Platform / Orchestration           │ ← Runs your container, scales app
                                │  (AWS ECS / Heroku / DigitalOcean / k8s)     │
                                └────────────────────────────────────────────────┘
                                                            │
                                                            ▼
-                                        ┌─────────────────────────────────┐   ← Ingress: SSL termination & routing
-                                        │     Ingress / Reverse Proxy     │
+                                        ┌─────────────────────────────────┐
+                                        │     Ingress / Reverse Proxy     │ ← SSL termination & routing
                                         │   (Nginx / Cloudflare + SSL)    │
                                         └─────────────────────────────────┘
                                                            │ HTTPS
@@ -54,7 +54,9 @@
              │                                     │
              ▼                                     ▼
       ┌────────────────────────────────────────────────┐
-      │                Email Service                  │
-      │              (SMTP / SendGrid)                │ ← Sends signup confirmations, resets, reminders
+      │            Email Service                      │ ← Sends signup confirmations, resets & reminders
+      │         (SMTP / SendGrid API)                 │
+      └────────────────────────────────────────────────┘
+
       └────────────────────────────────────────────────┘
          
