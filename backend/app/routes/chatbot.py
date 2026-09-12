@@ -1,8 +1,10 @@
+import logging
 import os
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 
 chatbot_bp = Blueprint('chatbot', __name__)
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (
     "You are Fit Bot, an energetic, friendly, and concise AI fitness assistant. "
@@ -39,5 +41,6 @@ def chat():
         )
         ai_response = response.choices[0].message.content.strip()
         return jsonify({'response': ai_response})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except Exception:
+        logger.exception('Fit Bot chat request failed')
+        return jsonify({'error': 'Fit Bot is unavailable right now. Please try again shortly.'}), 500
