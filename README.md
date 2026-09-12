@@ -1,64 +1,68 @@
 # Fit Fusion
 
-Fit Fusion is a Flask-based fitness tracking application that allows users to:
-
-- Register and log in.
-- Track workouts (with sets, reps, and weight).
-- View a paginated workout history (10 per page).
-- Edit or delete individual workouts via a 3‑dot dropdown menu.
-- Monitor progress with a Matplotlib-based weight/BMI chart.
-- Update personal profile information.
-- Reset passwords on-site (no email verification).
-- Download personal data in JSON format.
-- Interact with Fit Bot for quick fitness Q&A and references to tutorials.
+Fit Fusion is a full-stack fitness tracking app: a **Flask REST API** backend and a **React (Vite) SPA** frontend, styled with Tailwind CSS and charted with Recharts.
 
 ## Features
 
-1. **User Authentication**  
-   - Register a new account, specifying age, gender, height (in feet/inches), and weight (in lbs).
-   - Log in securely (passwords hashed with PBKDF2).
-   - Log out to clear sessions.
+- **Auth** — register/login with JWT, on-site "forgot password" reset (no email required), profile management, data export as JSON.
+- **Dashboard** — BMI, TDEE-based calorie plans, and an interactive weight/BMI trend chart.
+- **Workout Tracking** — log sets/reps/weight, exercise autocomplete from the library, paginated history with inline edit/delete.
+- **Goals** — set weight, strength, workout-count, or custom goals with progress bars; auto-marks complete when the target is hit.
+- **Exercise Library** — searchable/filterable catalog (category, muscle group, equipment, difficulty, instructions).
+- **Nutrition Logging** — log meals/macros per day, tracked against your TDEE target with a daily progress bar.
+- **Fit Bot** — AI chat widget for quick fitness/nutrition advice (falls back to a canned tip if no OpenAI key is configured).
 
-2. **Dashboard**  
-   - Displays user’s BMI, current weight, and TDEE-based calorie plan.
-   - Shows a Matplotlib-generated chart of weight and BMI over time.
-   - Paginated workout history (10 per page) with 3‑dot dropdown for edit/delete.
-   - Allows logging new workouts with sets, reps, and weight.
+## Project Structure
 
-3. **Workout Management**  
-   - **Add Workouts**: Choose workout type (Cardio, Weight Training, Strength Training), specify sets, reps, and weight.
-   - **Edit Workouts**: Update an existing workout via an edit page.
-   - **Delete Workouts**: Remove workouts you no longer need.
+```
+backend/    Flask REST API (SQLAlchemy models, JWT auth, blueprints per feature)
+frontend/   React + Vite SPA (Tailwind CSS, React Router, Recharts, Axios)
+```
 
-4. **On-Site Password Reset**  
-   - “Forgot Password” workflow that verifies email and allows resetting on-site without email links.
+## Running locally
 
-5. **Profile & Privacy**  
-   - Update personal info (username, email, age, gender, height, weight).
-   - Download personal data (including workout logs) as JSON.
-   - View personal data on a privacy tab.
+### Backend
 
-6. **Tutorials & Multimedia**  
-   - Separate pages for tutorials and multimedia content, referencing proper exercise form, nutrition tips, etc.
-   - Fit Bot references tutorials in Q&A if needed.
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env            # set SECRET_KEY / JWT_SECRET_KEY / OPENAI_API_KEY
+python run.py                   # runs on http://127.0.0.1:5000
+```
 
-7. **Fit Bot**  
-   - AI-powered assistant that provides concise, friendly advice on workouts and nutrition.
-   - System prompt instructs Fit Bot to keep responses short, efficient, and supportive.
+The API auto-creates its SQLite database and seeds the exercise library on first run.
 
-## Installation & Setup
+### Frontend
 
-1. **Clone or Download** this repository.
+```bash
+cd frontend
+npm install
+npm run dev                     # runs on http://localhost:5173, proxies /api to the backend
+```
 
-2. **Create and activate a virtual environment** (optional but recommended):
-   ```bash
-   python -m venv venv       # first time
-   cd fit_fusion/            # second and later times
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-3. **Start Flask**
-   ```bash
-   flask run --debug
-   ```
+Open `http://localhost:5173` in your browser. Register an account to get started.
 
-4. **Open In Browser** -- bottom right hand corner of CodeSpace, or "ports" tab.
+## API Overview
+
+All endpoints are under `/api` and (aside from `/api/auth/*`) require a `Authorization: Bearer <token>` header.
+
+| Area | Endpoints |
+|------|-----------|
+| Auth | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/forgot-password`, `POST /auth/reset-password` |
+| Profile | `GET/PUT /profile`, `GET /profile/download` |
+| Workouts | `GET/POST /workouts`, `PUT/DELETE /workouts/<id>`, `GET /workouts/dashboard` |
+| Goals | `GET/POST /goals`, `PUT/DELETE /goals/<id>` |
+| Exercises | `GET /exercises?search=&category=&muscle_group=` |
+| Nutrition | `GET/POST /nutrition`, `DELETE /nutrition/<id>` |
+| Fit Bot | `POST /chatbot` |
+
+## Environment Variables (`backend/.env`)
+
+| Variable | Purpose |
+|----------|---------|
+| `SECRET_KEY` | Flask session secret |
+| `JWT_SECRET_KEY` | JWT signing secret |
+| `OPENAI_API_KEY` | Enables live Fit Bot responses (optional) |
+| `DATABASE_URL` | SQLAlchemy database URI (defaults to local SQLite) |
